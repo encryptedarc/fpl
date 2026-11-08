@@ -1,111 +1,169 @@
-# fpl-gw — FPL gameweek co-pilot for Claude Code
+<p align="center">
+  <img src="assets/fpl-gw-logo.png" alt="fpl-gw — football analytics and gameweek planning" width="520">
+</p>
+<h1 align="center">fpl-gw</h1>
+<p align="center"><strong>Plan your gameweek. Keep the decisions that matter.</strong></p>
+<p align="center">Claude Code plugin สำหรับวางแผน Fantasy Premier League<br>เช็กข่าว · เทียบ transfers · เลือก captain · ประเมิน xPts<br><strong>เริ่มในแชตได้ทันที — ไม่ต้องมี Obsidian หรือ workspace</strong></p>
+<p align="center">
+  <a href="#เริ่มใช้งาน">เริ่มใช้งาน</a> · <a href="#ลองถามแบบนี้">ตัวอย่างคำถาม</a> · <a href="#workspace-mode-เก็บประวัติเป็นตัวเลือก">เก็บประวัติ</a> · <a href="#scripts">Scripts</a> · <a href="#ข้อจำกัดที่ควรรู้">ข้อจำกัด</a>
+</p>
 
-A Claude Code plugin that runs your **Fantasy Premier League** week with you: team news, transfer comparisons, captain picks, opponent matchups and expected-points projections — and keeps every decision in a plain markdown (Obsidian-friendly) vault so the next session picks up where the last one stopped.
+---
 
-```
-you   > check news before the deadline
-agent > ⏰ 54 min to the GW10 deadline · all 15 available · Groß 4 yellows ⚠️ one from a ban · …
-you   > who should I captain, Haaland or Isak?
-agent > table: xG/90, minutes, pen order, ownership · opponent xGA · xPts 5.6 vs 6.8 if Isak starts · EO trade-off …
-you   > projected points for my XI
-agent > per-player xPts · XI ≈ 66 · Monte Carlo 20,000 runs: p10–p90 51–82 · auto-subs + vice included
-you   > lock it, I'm going with Isak
-agent > GW10.md locked · Squad.md updated · remember to make the transfer in the FPL app
-```
+ส่ง screenshot ทีม หรือบอกชื่อผู้เล่นที่อยากเทียบ แล้วให้ `fpl-gw` ช่วยวิเคราะห์ข่าว, transfers, captain และคะแนนคาดการณ์ได้เลย หากอยากเก็บแผนกับบทเรียนต่อเนื่อง ค่อยเปิด Workspace mode เพื่อบันทึกเป็นไฟล์ Markdown
 
-## What it does
+| | Quick mode — ค่าเริ่มต้น | Workspace mode — เลือกใช้ |
+|---|---|---|
+| เริ่มต้น | ส่งทีม/รายชื่อผู้เล่นในแชต | สร้างหรือเลือกโฟลเดอร์ Markdown |
+| ข้อมูลทีม | Screenshot หรือข้อความ | `Squad.md` และข้อมูลที่ส่งเพิ่ม |
+| การวิเคราะห์ | ข่าว, transfers, captain, matchup, xPts | เหมือน Quick mode พร้อมอ่านประวัติ |
+| การเก็บแผน | อยู่ในแชต ไม่มีไฟล์ประวัติข้ามแชต | โน้ตราย GW, season log และ lessons |
+| Obsidian | ไม่ต้องมี | ไม่ต้องมี; ใช้เพิ่มสำหรับ dashboard ได้ |
 
-| Ask (English or Thai) | You get |
-|---|---|
-| "check news" · "check ข่าว" | Deadline countdown, status/news for your 15 + targets, price moves, **yellow-card ban risk**, live points while a GW is under way, press-conference summary |
-| "Isak or Jackson?" · "ซื้อใครดี" | Standard comparison table (xG/90, xGI/90, pts/90, minutes, pen order, G+A vs xGI over/under), 6-GW fixture ticker, budget maths with selling prices, multi-GW xPts |
-| "who to captain?" · "C ใคร" | Candidate stats, opponent defence, xPts with an "if he starts" column, template-captain ownership trade-off, correct vice-captain rule |
-| "how leaky is Palace?" · "สถิติคู่แข่ง" | Last-5 results with team xG for/against, home/away splits, league xGA ranks (+ situational data from xGstat if your session has a browser) |
-| "projected points" · "คาดการณ์คะแนน" | Per-player xPts, XI total, Monte Carlo range with FPL auto-subs and vice fallback; played fixtures use real live points |
-| "lock the plan" · "บันทึกแผน" / "close GW10" | Fills the GW note, overwrites `Squad.md`, logs results, captain record and new lessons |
+> **คุณเป็นคนตัดสินใจและทำรายการใน FPL เอง** การยืนยันหรือบันทึกแผนไม่ได้ซื้อขาย เปลี่ยน XI หรือเลือก captain ในบัญชี FPL
 
-Every estimate is labelled as one, every web number carries a source and date, and closed gameweeks are never rewritten without evidence.
+## เริ่มใช้งาน
 
-## Install
+ต้องมี **Claude Code** และ **Node.js 18+** สำหรับ scripts — ใช้เฉพาะ Node built-ins ไม่ต้องรัน `npm install`
 
-Requires **Claude Code** and **Node.js 18+** (the scripts use only Node built-ins).
+### 1. ติดตั้ง plugin
 
-```
+รันใน Claude Code:
+
+```text
 /plugin marketplace add encryptedarc/fpl
 /plugin install fpl-gw@fpl
 ```
 
-Restart Claude Code (or start a new session) so the skill and command load. Update later with `/plugin marketplace update fpl`.
+เปิด session ใหม่หรือ restart Claude Code เพื่อโหลด skill และ command อัปเดต marketplace ภายหลังด้วย `/plugin marketplace update fpl`
 
-## Set up your vault (once)
+### 2. ส่งทีม แล้วถามได้เลย
 
+```text
+นี่คือทีมของฉัน [แนบ screenshot หน้า Pick Team]
+ช่วย check ข่าวก่อน deadline และแนะนำ C/V ให้หน่อย
 ```
-/fpl-gw:init ~/Obsidian/FPL 2026-27
+
+หรือเริ่มจากคำถามสั้น ๆ เช่น **“เทียบ Saka กับ Palmer ให้หน่อย”** โดยไม่ต้องส่งทั้งทีม Agent จะถามเฉพาะข้อมูลที่จำเป็น เช่น selling price หรือ ITB หากต้องตรวจงบ
+
+**Quick mode ไม่ต้องรัน `/fpl-gw:init` และไม่ต้องมี `CLAUDE.md` หรือ `Squad.md`** ไม่มีการสร้างโน้ตอัตโนมัติ; scripts ยังใช้ cache API ใน OS temp ได้ หากเริ่มแชตใหม่ให้ส่งทีมและแผนล่าสุดอีกครั้ง หรือเลือกใช้ Workspace mode ด้านล่าง
+
+## ลองถามแบบนี้
+
+| งาน | ตัวอย่างคำถาม | สิ่งที่ได้ |
+|---|---|---|
+| Team news | “check ข่าวก่อน deadline” | เวลาที่เหลือ, status ผู้เล่น, ข่าวบาดเจ็บ, ราคาและ transfers |
+| Transfers | “เทียบสองคนนี้ ซื้อใครดี” | สถิติ, minutes, fixtures/FDR และงบที่แต่ละทางเลือกต้องใช้ |
+| Captain | “GW นี้ C ใคร และ V ใครดี” | เทียบตัวเลือก, คู่แข่ง, xPts และกรณีได้ลงตัวจริง |
+| Matchup | “คู่แข่งเกมรับเป็นยังไง” | ผลล่าสุด, xGF/xGA และ home/away split |
+| Projection | “คาดการณ์คะแนน XI พร้อม bench” | xPts รายคนและช่วงคะแนนจาก Monte Carlo เมื่อระบุ simulation |
+| Lock | “ยืนยันแผนนี้” | สรุปแผนในแชต; บันทึกลงไฟล์เมื่อใช้ Workspace mode |
+| Review | “นี่คือผลแต้ม ช่วย review ให้หน่อย” | วิเคราะห์ผลในแชต; อัปเดต season log และ lessons เมื่อใช้ Workspace mode |
+
+ตัวเลขที่ agent ประเมินต้องติดป้าย `(est.)` แยกจากผลจริง และตัวเลขจากเว็บต้องมีแหล่งพร้อมวันที่
+
+## Workspace mode: เก็บประวัติเป็นตัวเลือก
+
+อยากให้แชตถัดไปอ่านทีม แผนและเหตุผลเดิมได้ ให้สร้าง workspace ในโฟลเดอร์ธรรมดา:
+
+```text
+/fpl-gw:init ~/FPL 2026-27
 ```
 
-This creates the starter vault (it never overwrites existing files):
+บน Windows ใช้ absolute path ได้ หากมีช่องว่างให้ครอบด้วย quotes ตัว scaffold เก็บไฟล์เดิมไว้โดยไม่เขียนทับ จากนั้นส่ง screenshot ให้ agent กรอก `Squad.md` และแจ้งภาษาที่ต้องการใน `CLAUDE.md` §1 ข้อ 8; FPL team ID เป็นตัวเลือก
 
-```
+เปิด Claude Code ใน workspace หรือกำหนด `FPL_WORKSPACE` เป็น path ของโฟลเดอร์ สำหรับ scripts ใช้ `--workspace "<path>"` ได้ โดย `--vault` และ `FPL_VAULT` ยังรองรับของเดิม ไม่ต้องย้ายไฟล์หรือสร้าง workspace ใหม่
+
+### Workflow รายสัปดาห์
+
+**Plan → Refine → Lock → Close**
+
+| ขั้นตอน | เมื่อไร | บันทึกอะไร |
+|---|---|---|
+| **Plan** | เริ่มวางแผน GW ใหม่ | สร้าง `GW/GWnn.md` จาก template สถานะ `planning` |
+| **Refine** | มีข่าวหรือเปลี่ยนทางเลือก | เพิ่ม Team news และ Decision path โดยเก็บเหตุผลเดิม |
+| **Lock** | ผู้ใช้ยืนยันแผน | สถานะ `locked`, กรอกแผนและอัปเดต `Squad.md` |
+| **Close** | มีหลักฐานผลคะแนน | สถานะ `closed`, บันทึกผล, อัปเดต season และ lessons |
+
+ข้อมูลที่ไม่มีหลักฐานใช้ `unknown` และการแก้ผล GW ที่ปิดแล้วต้องมีหลักฐานใหม่พร้อมบันทึก correction ตามกฎ workspace
+
+### ภายใน workspace
+
+```text
 FPL/
-├── CLAUDE.md            ← rules every agent follows (read order, note schema, workflow, stop conditions)
-├── AGENTS.md            ← pointer for non-Claude agents
-├── README.md
-├── Squad.md             ← your 15 (Pos | Player | Club | buy price) — the scripts read this table
-├── Lessons.md           ← pre-deadline checklist + lessons you learn
-├── Season 2026-27.md    ← dashboard: GW log, chips, captain record (Dataview table included)
-├── Fixtures 2026-27.md  ← fixtures + FDR matrix
-├── GW/                  ← one note per gameweek (GW10.md …)
+├── CLAUDE.md                 # กฎ, schema และลำดับการอ่านสำหรับ agent
+├── AGENTS.md                 # ชี้ agent อื่นไปที่ CLAUDE.md
+├── README.md                 # คู่มือของ workspace
+├── Squad.md                  # ทีมปัจจุบัน, ITB และ watchlist
+├── Lessons.md                # Checklist และบทเรียน
+├── Season 2026-27.md          # Dashboard, GW log, chips และ captain record
+├── Fixtures 2026-27.md        # Fixtures และ FDR
+├── GW/                       # โน้ตแยกตาม Gameweek
 └── Templates/GW Template.md
 ```
 
-Then send a screenshot of your FPL "Pick Team" page so the agent can fill `Squad.md`, and set your note language in `CLAUDE.md` §1.
+เมื่อใช้ Workspace mode scripts อ่านตาราง `Squad.md` ตามคอลัมน์ **Pos | Player | Club** ให้เก็บลำดับนี้ไว้ ใช้ชื่อผู้เล่นตาม FPL และรหัสสโมสร เช่น `ARS` หรือ `LIV` **Obsidian / Dataview เป็น Optional integration:** ใช้เฉพาะตาราง dashboard อัตโนมัติ ส่วน GW log และ captain record เป็นตาราง Markdown ที่เปิดด้วย editor ทั่วไปได้
 
-Open Claude Code **in the vault folder** — or set `FPL_VAULT=/path/to/FPL` — and start with "check news".
+## Scripts
 
-## The weekly loop
-
-1. **Plan** — "plan GW11": creates `GW/GW11.md` from the template.
-2. **Refine** — news, comparisons, captain, projections: each answer is appended to the note's *Team news* / *Decision path*, numbered, never deleted. Corrections point back to the item they fix.
-3. **Lock** — only when you confirm: transfers, XI, C/V, bench, risks accepted; `Squad.md` rewritten. You still make the moves in the FPL app.
-4. **Close** — send your result screenshot: points, ranks, Season log, captain record, new lessons; the projection is compared with what happened.
-
-## Scripts (usable on their own)
-
-All live in `plugins/fpl-gw/skills/fpl-gw/scripts/`. Shared flags: `--vault <dir>` (default `FPL_VAULT`, then the current folder), `--cache <dir>`, `--fresh`.
+ตัวอย่างนี้รันจาก **root ของ repo** ใช้ Quick mode โดยไม่ต้องมี workspace ชื่อผู้เล่นต้องตรงกับ API ของ season ที่ใช้อยู่ หากใช้ plugin agent จะเรียก scripts จากตำแหน่งติดตั้งให้
 
 ```bash
-node news.js --players "Saliba:ARS,Yarmoliuk:BRE"
-node compare.js --players "Manzambi:AVL,Gakpo:LIV,Ødegaard:ARS" --n 6
-node opponent.js --teams NFO,CRY --last 5
-node projection.js --xi "Raya,Konsa,…" --bench "GK2,Sub1,Sub2,Sub3" --captain Isak --vice Haaland --sims 20000
-node projection.js --gws 11-13 --xi "…" --extra "Manzambi:AVL"
-node init-vault.js --dir ~/Obsidian/FPL --season 2026-27
+# ข่าวของผู้เล่นที่ระบุโดยตรง
+node plugins/fpl-gw/skills/fpl-gw/scripts/news.js --players "Saka:ARS,Palmer:CHE"
+
+# เทียบผู้เล่นและ fixtures ถัดไป
+node plugins/fpl-gw/skills/fpl-gw/scripts/compare.js --players "Saka:ARS,Palmer:CHE" --n 6
+
+# สถิติคู่แข่งจากผล 5 นัดล่าสุด
+node plugins/fpl-gw/skills/fpl-gw/scripts/opponent.js --teams ARS,CHE --last 5
+
+# Projection รายคน ไม่ต้องมี Squad.md
+node plugins/fpl-gw/skills/fpl-gw/scripts/projection.js --players "Saka:ARS,Palmer:CHE" --gw 11
+
+# Optional: สร้าง workspace เพื่อเก็บประวัติ
+node plugins/fpl-gw/skills/fpl-gw/scripts/init-vault.js --dir "/path/to/FPL" --season 2026-27
 ```
 
-### How the projection works
+สำหรับ projection ของ XI ให้เพิ่ม `--xi` เป็นชื่อ 11 คน, `--bench` เป็น GK สำรองตามด้วยผู้เล่นสำรองตามลำดับ, `--captain`, `--vice` และ `--sims 20000` เมื่อระบุ `--xi` scripts จะสร้าง player pool จาก XI และ bench โดยไม่อ่าน `Squad.md`; ใช้ `Name:CLUB` เพื่อแยกชื่อซ้ำ และเพิ่มเป้าหมายด้วย `--extra`
 
-- Team expected goals: `team xG for × opponent xG against ÷ league average`, ±8% home/away. Team xG is summed from players' `expected_goals` in the FPL live data.
-- Player share: season xG/90 and xA/90 scaled to the fixture, times expected minutes (last 5 games).
-- Points: appearance, goals by position, assists, clean sheets (Poisson), goals conceded, saves, DefCon hit-rate, bonus/90.
-- `--sims` samples minutes, goals and assists, draws goals conceded once per team (so clean sheets move together), applies FPL auto-subs in your bench order and the vice-captain rule.
-- Not modelled: cards, own goals, penalty saves, form trends. It is a consistent yardstick, not an oracle — the GW review compares it with real results.
+| Flag | ใช้กับ | ความหมาย |
+|---|---|---|
+| `--players "A:CLUB,B:CLUB"` | News / projection | ระบุ player pool โดยตรง แทนการอ่าน squad จาก workspace |
+| `--extra "Name:CLUB"` | News / projection | เพิ่มผู้เล่นเข้ากับ pool ที่เลือกหรือ squad ที่อ่านจาก workspace |
+| `--workspace <dir>` | News / projection | อ่าน squad จากโฟลเดอร์; รองรับชื่อเดิม `--vault` |
+| `--cache <dir>` | Data scripts | ตำแหน่ง cache; default คือ `fpl-cache` ใน OS temp |
+| `--fresh` | Data scripts | ดึงข้อมูลใหม่ ยกเว้น live data ของ GW ที่จบแล้ว |
+| `--gws 11-13` | Projection | แสดงหลาย GW พร้อมผลรวมรายคน |
+| `--if-starts "Name"` | Projection | เพิ่มคอลัมน์ประเมินเมื่อได้ลงตัวจริง |
+| `--minutes "Name:0"` | Projection | จำลองสถานการณ์โดยกำหนด minutes ของผู้เล่น |
 
-## Data sources
+ลำดับ path สำหรับอ่าน squad คือ `--workspace` → `--vault` → `FPL_WORKSPACE` → `FPL_VAULT` → โฟลเดอร์ปัจจุบัน โดย `--players` หรือ `--xi` ของ projection มีสิทธิ์เหนือ squad ที่บันทึกไว้ Quick mode ของ agent จะส่งผู้เล่นโดยตรงเพื่อไม่อ่านทีมจากโฟลเดอร์อื่นโดยไม่ตั้งใจ
 
-- **FPL API** (`fantasy.premierleague.com/api/`) — public, no login, unofficial and undocumented; schema can change, and it answers "The game is being updated" around deadlines and match ends. Data that needs your login (selling prices, your team before the deadline) comes from your screenshots.
-- **Web search / pages** for press conferences and predicted line-ups (Fantasy Football Scout, club sites). Search results often surface last season's articles; the skill checks dates.
-- **xGstat** for situational detail, only through an in-app browser (it blocks scripted requests). Understat and Sofascore block scripted requests too.
+**สำหรับผู้ใช้เดิม:** `news.js --players` เปลี่ยนเป็นเลือกเฉพาะรายชื่อที่ระบุ หากต้องการเช็ก squad ใน workspace พร้อม targets ให้ใช้ `--workspace "<path>" --extra "Name:CLUB"`
 
-## Thai / ภาษาไทย
+ดูวิธีใช้เพิ่มเติมใน [SKILL.md](plugins/fpl-gw/skills/fpl-gw/SKILL.md) และ [projection reference](plugins/fpl-gw/skills/fpl-gw/references/projection.md)
 
-Plugin สำหรับ Claude Code ช่วยทำ FPL รายสัปดาห์: เช็กข่าว เทียบตัวซื้อขาย เลือกกัปตัน ดูสถิติคู่แข่ง และคาดการณ์คะแนน (มี Monte Carlo) ทุกการตัดสินใจเก็บลง vault markdown/Obsidian เพื่อให้ session ถัดไปทำงานต่อได้
+## ข้อมูลและโมเดล
 
-1. ติดตั้ง: `/plugin marketplace add encryptedarc/fpl` แล้ว `/plugin install fpl-gw@fpl`
-2. สร้าง vault: `/fpl-gw:init <โฟลเดอร์> 2026-27` แล้วส่ง screenshot หน้า Pick Team ให้ agent กรอก `Squad.md` และตั้งภาษาใน `CLAUDE.md` ข้อ 1.8 เป็น Thai
-3. เปิด Claude Code ในโฟลเดอร์ vault แล้วพิมพ์ เช่น "check ข่าว", "C ใคร", "คาดการณ์คะแนน", "บันทึกแผน"
+**FPL API** เป็นแหล่งหลักสำหรับ players, fixtures, status, live points และสถิติ ส่วน press conference และ predicted lineups ต้องใช้ web tools ของ agent เพิ่มเติม หาก session มี browser จึงอาจใช้ข้อมูล matchup จาก xGstat ได้
 
-ตัวเลขที่ agent ประเมินเองจะติดป้าย `(est.)` ทุกครั้ง และ agent ไม่แก้ผล GW ที่ปิดแล้วถ้าไม่มีหลักฐาน
+Projection ใช้ team xG ที่รวมจากข้อมูลผู้เล่นใน FPL live API เพื่อประเมินโอกาสทำประตู/เสียประตู ปรับ home/away ±8% แล้วคำนวณจาก xG/90, xA/90 และ minutes ย้อนหลัง โมเดลรวม appearance, goals, assists, clean sheets, goals conceded, saves, defensive contribution และ bonus
+
+Monte Carlo สุ่ม minutes, goals และ assists รวมถึง goals conceded ร่วมกันในระดับทีม พร้อม logic auto-sub และ vice-captain ผลเป็น **estimate เพื่อเทียบทางเลือก** ยังไม่มีผล calibration หรือ backtest ใน repo นี้
+
+## ข้อจำกัดที่ควรรู้
+
+- **Double Gameweek ยังไม่รองรับใน projection** ตารางแสดง `DGW — not modelled` เป็น 0 และ simulation อาจหยุดทำงาน ห้ามตีความเป็นคะแนนคาดการณ์จริง
+- **Fixture ที่ยังไม่มี kickoff time** อาจทำให้ `news.js` หยุดทำงาน
+- **เวลา `fetched` ใน output เป็นเวลารัน** เมื่ออ่าน cache อาจไม่ใช่เวลาที่ดึงข้อมูลจริง ใช้ `--fresh` เมื่อต้องการข่าวล่าสุด และตรวจ timestamp ของ cache หากต้องการ audit
+- **ยังไม่จำลอง** cards, own goals, penalty saves, form trends หรือ chip multipliers; auto-subs อยู่ใน simulation เท่านั้น
+- **เวลา fixtures ใน `news.js` เป็น TH (UTC+7)** แม้รันเครื่องใน timezone อื่น
+- **FPL API ไม่มี contract รับประกัน** schema อาจเปลี่ยนหรือปิดชั่วคราวช่วงอัปเดตเกม ข้อมูลก่อน deadline และ selling prices ต้องอาศัย screenshot จากผู้ใช้
+- **ยังไม่มี LICENSE ใน repo** ตรวจสอบกับเจ้าของก่อนนำไปแจกจ่ายภายใต้เงื่อนไขที่ต้องการ
+
+รายละเอียดการตรวจและแนวทางแก้อยู่ใน [รายงาน review](REVIEW.md)
 
 ---
 
-Not affiliated with the Premier League or Fantasy Premier League.
+พัฒนาโดย [encryptedarc](https://github.com/encryptedarc) · ไม่มีความเกี่ยวข้องอย่างเป็นทางการกับ Premier League หรือ Fantasy Premier League
