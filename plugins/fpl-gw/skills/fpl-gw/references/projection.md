@@ -5,7 +5,9 @@ node scripts/projection.js --xi "<11 names>" --bench "<GK2>,<sub1>,<sub2>,<sub3>
         [--gw N | --gws A-B] [--extra "Target:CLB"] [--if-starts "…"] [--minutes "Konsa:60"]
 ```
 
-Every number it prints is an estimate — label it the way the vault says (Hard Rule 4).
+Use this command in either mode: the XI and bench supply the player pool without a workspace. For player-only comparisons use `--players "A:CLUB,B:CLUB"`. With neither flag, an optional workspace `Squad.md` supplies the pool. `--extra` adds targets to the pool.
+
+Label projected values `(est.)` or the user's chosen estimate label; played-fixture actuals remain identified as actuals. A workspace is not required. DGWs are not modelled and can crash simulation: do not present their printed 0 as a forecast. A full team forecast requires all 11 starters and, for auto-subs, the ordered bench.
 
 - `--sims` adds a Monte Carlo line per GW: mean, median, p10–p90. It samples each player's minutes from the last 5, goals/assists from Poisson, goals conceded once per team (so a clean sheet hits GK+DEF together), applies FPL auto-subs in `--bench` order (formation min 1/3/2/1) and the vice if the captain plays 0′. Use it whenever the user asks "คาดการณ์คะแนน" for the XI — a range answers "how good is this team this week" better than one number.
 - `--gws 11-13` prints one table per GW plus a per-player sum — use it for transfer horizons.
@@ -28,6 +30,6 @@ Every number it prints is an estimate — label it the way the vault says (Hard 
 - Ranges come only from `--sims` (state the run count). Don't invent an interval by hand.
 - Re-run named scenarios with `--minutes` (e.g. `--minutes "Konsa:0"` for "Saliba starts", `--minutes "Isak:85"` for "Isak starts") rather than computing auto-subs by hand.
 
-## Write
+## Write (Workspace mode only)
 
 Decision-path item `Projection GWnn` (labelled as an estimate) with model line, table, totals, sensitivities, source line.

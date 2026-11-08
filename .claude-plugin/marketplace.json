@@ -10,7 +10,7 @@
     {
       "name": "fpl-gw",
       "source": "./plugins/fpl-gw",
-      "description": "FPL gameweek co-pilot: team news, transfer comparisons, captain picks, opponent matchups, xPts projections with Monte Carlo ranges — kept in a markdown/Obsidian vault.",
+      "description": "FPL gameweek co-pilot: news, transfers, captain picks, matchups and xPts in chat, with optional plain Markdown history. No Obsidian required.",
       "version": "0.1.0",
       "keywords": ["fpl", "fantasy-premier-league", "football", "obsidian"]
     }

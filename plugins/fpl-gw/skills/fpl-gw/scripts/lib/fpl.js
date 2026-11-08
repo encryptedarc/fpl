@@ -20,7 +20,8 @@ function parseArgs(argv) {
 function ctx(args) {
   const cache = args.cache || path.join(os.tmpdir(), 'fpl-cache');
   fs.mkdirSync(cache, { recursive: true });
-  return { cache, vault: args.vault || process.env.FPL_VAULT || process.cwd(), fresh: !!args.fresh };
+  const workspace = args.workspace || args.vault || process.env.FPL_WORKSPACE || process.env.FPL_VAULT;
+  return { cache, vault: workspace || process.cwd(), workspaceExplicit: !!workspace, fresh: !!args.fresh };
 }
 
 // maxAgeMin: reuse a cached file younger than this; --fresh forces refetch of volatile data
@@ -64,9 +65,12 @@ function findPlayer(bs, spec) {
 }
 
 // Squad.md table rows: | Pos | Player | Club | note |
-function readSquad(c) {
+function readSquad(c, optional = false) {
   const file = path.join(c.vault, 'Squad.md');
-  if (!fs.existsSync(file)) throw new Error(`Squad.md not found in ${c.vault} — pass --vault <FPL vault dir> or set FPL_VAULT`);
+  if (!fs.existsSync(file)) {
+    if (optional && !c.workspaceExplicit) return [];
+    throw new Error(`Squad.md not found in ${c.vault} — pass --players or --xi for Quick mode, or --workspace <dir> (legacy: --vault / FPL_VAULT)`);
+  }
   const md = fs.readFileSync(file, 'utf8');
   return md.split('\n')
     .map((l) => l.split('|').map((s) => s.trim()))

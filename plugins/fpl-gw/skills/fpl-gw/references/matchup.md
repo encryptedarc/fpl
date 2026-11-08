@@ -43,6 +43,6 @@ Then one line per matchup: does the opponent's weak channel feed **this player's
 - Symmetric context: midweek games, absences — check both sides.
 - 9-game samples are noisy; GA far above xGA usually means bad luck, not a bad defence.
 
-## Write
+## Write (Workspace mode only)
 
 Decision-path item with both tables, matchup lines, sources (URLs), and any correction of earlier items.

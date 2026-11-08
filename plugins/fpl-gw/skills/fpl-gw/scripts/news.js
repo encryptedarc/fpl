@@ -1,10 +1,11 @@
 // Deadline countdown, GW fixtures and status/news for the squad (+ extra players).
-// usage: node news.js [--gw 10] [--players "Isak:LIV,Saliba:ARS"] [--vault <FPL dir>] [--cache <dir>] [--fresh]
+// usage: node news.js [--gw 10] [--players "Isak:LIV,Saliba:ARS"] [--extra "Target:CLUB"] [--workspace <dir>] [--cache <dir>] [--fresh]
 const F = require('./lib/fpl');
 
 (async () => {
   const args = F.parseArgs(process.argv);
   const c = F.ctx(args);
+  const players = args.players ? String(args.players).split(',').map(s => s.trim()).filter(Boolean) : F.readSquad(c, true);
   const bs = await F.bootstrap(c);
   const { T } = F.teamMaps(bs);
   const ev = args.gw ? bs.events.find((e) => e.id === +args.gw) : F.nextEvent(bs);
@@ -17,8 +18,9 @@ const F = require('./lib/fpl');
   fx.sort((a, b) => a.kickoff_time.localeCompare(b.kickoff_time))
     .forEach((f) => console.log(`${F.thTime(f.kickoff_time)} | ${T[f.team_h]} v ${T[f.team_a]} | FDR ${f.team_h_difficulty}/${f.team_a_difficulty}`));
 
-  const specs = F.readSquad(c).map((s) => ({ s, tag: 'SQ' }))
-    .concat((args.players ? args.players.split(',') : []).map((s) => ({ s, tag: 'XT' })));
+  const specs = players.map((s) => ({ s, tag: args.players ? 'IN' : 'SQ' }))
+    .concat((args.extra ? String(args.extra).split(',').map(s => s.trim()).filter(Boolean) : []).map((s) => ({ s, tag: 'XT' })));
+  if (!specs.length) { console.log('\nNo players supplied — use --players "Name:CLUB,..." for team news; no workspace is required.'); return; }
   console.log('\n## Status (a=available d=doubt i=injured s=suspended u=unavailable)');
   // GW under way: show provisional points of fixtures already played
   const cur = bs.events.find((e) => e.is_current && !e.finished);

@@ -1,6 +1,6 @@
 # Step: Captain / vice
 
-Default is the template captain — the most-owned premium (Haaland in 2026-27). Dodging him only because "the fixture looks hard" is a classic way to lose points; check the vault Lessons for the user’s own record on this. There is **no fixed edge threshold** for switching: the user decides. Your job is to lay out the numbers and the trade-off honestly.
+Compare the candidates against the current template captain using verified ownership and available evidence. Use the user's relevant history from this chat, or workspace Lessons when available. There is **no fixed edge threshold** for switching: the user decides. Lay out the numbers and the trade-off honestly; do not require a lessons file to answer.
 
 ## Do
 
@@ -30,6 +30,6 @@ Then the options as **C X / V Y** pairs with ✅/❌, and the EO line. If the an
 - The vice gets doubled when the captain plays 0′, **regardless of kickoff order** (FPL applies it at GW end).
 - Pick the vice as the next-best captain option, not by kickoff time.
 
-## Write
+## Write (Workspace mode only)
 
 Decision-path item. At lock, frontmatter `captain:` / `vice:` and the `## XI` C/V line.

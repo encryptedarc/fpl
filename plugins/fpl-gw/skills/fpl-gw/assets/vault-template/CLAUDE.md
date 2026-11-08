@@ -1,12 +1,13 @@
-# FPL Vault — Agent Protocol
+# FPL Workspace — Agent Protocol
 
-> Rules for every AI agent (Claude / Codex / Cursor / Gemini) working in this vault.
+> Rules for every AI agent (Claude / Codex / Cursor / Gemini) working in this workspace.
 > Read this file to the end before answering an FPL question or editing any file here.
 
 ## 0. Scope
-- This vault holds one manager's FPL campaign from season {{SEASON}} onwards.
+- This is an optional plain Markdown workspace. Obsidian is not required. Outside a selected workspace, the skill works in Quick mode without these files.
+- This workspace holds one manager's FPL campaign from season {{SEASON}} onwards.
 - Manager / team name: <fill in> · FPL team_id: `unknown` (add it to let agents read your rank and history)
-- Source of truth = files in this vault > memory of the conversation > the model's general knowledge.
+- Source of truth = files in this workspace > memory of the conversation > the model's general knowledge.
 
 ## 1. Hard Rules
 1. **Read before answering** — before giving FPL advice, read (in order): `CLAUDE.md` → `Squad.md` → `Lessons.md` → the latest GW note in `GW/` → `Season {{SEASON}}.md` (only the relevant part).
@@ -80,7 +81,7 @@ tags: [fpl, gw]            # add the chip if one is used
 - About to edit a GW with `status: closed`.
 - About to create a file outside the layout in §2.
 
-## 7. Final Summary Contract (every time the vault is written)
+## 7. Final Summary Contract (every time the workspace is written)
 End the answer with:
 ```
 Vault updated:
@@ -102,7 +103,7 @@ Base: `https://fantasy.premierleague.com/api/` — unofficial/undocumented (the 
 
 **Fetching**
 - Send a browser-like User-Agent (`curl -s -A "Mozilla/5.0" <url>`); bare requests can be blocked.
-- The `fpl-gw` skill's node scripts fetch and cache these for you. Keep fetched JSON outside the vault.
+- The `fpl-gw` skill's node scripts fetch and cache these for you. Keep fetched JSON outside the workspace.
 
 **Watch out**
 - `ep_next` ≈ `form` (not fixture-adjusted) — don't use it as the main projection.

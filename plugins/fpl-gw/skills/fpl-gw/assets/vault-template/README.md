@@ -1,23 +1,28 @@
 ---
 tags: [fpl, meta]
 ---
-# FPL Vault
+# FPL Workspace
 
-| Path | What it's for |
+This optional folder stores plain Markdown plans and results. Open it in any text editor; Obsidian is not required. The fpl-gw skill can also work in Quick mode without a workspace, using player names or screenshots supplied in chat.
+
+| Path | What it is for |
 |---|---|
-| [[Season {{SEASON}}]] | Dashboard: total points, GW log, chips, captain record |
-| [[Squad]] | Current squad + ITB + watchlist |
-| [[Lessons]] | Pre-deadline checklist + lessons from real results |
-| [[Fixtures {{SEASON}}]] | Fixtures and FDR matrix |
-| `GW/GW01…` | One note per gameweek (frontmatter works with Dataview) |
-| `Templates/GW Template.md` | Template for a new GW |
+| [Season dashboard](Season%20{{SEASON}}.md) | Total points, GW log, chips and captain record |
+| [Squad](Squad.md) | Current squad, ITB and watchlist |
+| [Lessons](Lessons.md) | Pre-deadline checklist and lessons from results |
+| [Fixtures](Fixtures%20{{SEASON}}.md) | Fixtures and FDR matrix |
+| `GW/GW01...` | One note per gameweek |
+| [GW template](Templates/GW%20Template.md) | Template for a new GW |
 
-Install the Obsidian **Dataview** plugin for the auto tables in the Season dashboard.
+The Season dashboard includes normal Markdown tables. Its optional Dataview block renders automatically only in Obsidian with the Dataview plugin; other editors can use the tables directly.
 
 ## Weekly rhythm
-1. **3–5 days before the deadline** — ask your agent to plan the GW (it creates `GW/GWxx.md`).
-2. **The day before** — "check news" after press conferences.
-3. **Before the deadline** — compare transfers, pick the captain, "lock the plan", then make the moves in the FPL app.
-4. **After the GW** — send your result screenshot to close the GW; lessons go to [[Lessons]].
 
-Agent rules: [[CLAUDE.md]] (other agents read `AGENTS.md`, which points to the same file).
+1. Before the deadline, ask your agent to plan the GW.
+2. Refine with news, comparisons and projections.
+3. Confirm the plan, then make the changes yourself in FPL.
+4. Send result evidence to review the GW and record lessons.
+
+Open your agent in this folder, or set `FPL_WORKSPACE` to this path. Scripts also accept `--workspace <folder>`; legacy `--vault` and `FPL_VAULT` remain supported. Explicit `--players` selects a player pool instead of reading the saved squad. With news, use `--extra` to add targets to the saved squad.
+
+Agent rules: [CLAUDE.md](CLAUDE.md). Other agents start with [AGENTS.md](AGENTS.md).

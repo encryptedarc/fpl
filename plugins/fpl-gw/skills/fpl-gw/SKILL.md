@@ -1,77 +1,65 @@
 ---
 name: fpl-gw
-description: Run a Fantasy Premier League (FPL) gameweek workflow inside a markdown/Obsidian FPL vault — check team news/injuries/yellow-card bans, compare transfer options with stats, pick captain/vice, analyse opponent defence vs our attack, project xPts (with Monte Carlo ranges) for the XI, then lock the plan into GW notes + Squad.md and close the GW with results. Use this whenever the user talks about FPL / Fantasy Premier League / a gameweek, even in short prompts like "check news", "who to captain", "C ใคร", "check ข่าว", "วิเคราะห์แผน", "เลือกใครดี", "กัปตัน", "คาดการณ์คะแนน", "สถิติคู่แข่ง", "เกมรับ/เกมรุก", "บันทึกแผน", "lock", "ปิด GW", "ผลแต้ม GW", or names players (Haaland, Salah, Palmer…) alongside a GW, transfer, captain or deadline — including follow-ups mid-conversation. Also use it to set up a new FPL vault.
+description: Help with Fantasy Premier League gameweek planning — team news, transfers, captain/vice, opponent matchups and xPts projections. Use for FPL questions and follow-ups, including Thai prompts such as "check ข่าว", "C ใคร" and "คาดการณ์คะแนน". Works directly in chat; optionally saves plans and results in a plain Markdown workspace.
 ---
 
-# FPL Gameweek workflow
+# FPL Gameweek assistant
 
-The vault's own rules live in its `CLAUDE.md` (hard rules, GW note schema, Plan → Refine → Lock → Close workflow, FPL API notes). This skill does **not** restate them — it adds *how* to do each step quickly and consistently. Read the vault `CLAUDE.md` first if it isn't already in context; where the two ever disagree, the vault `CLAUDE.md` wins.
+## Choose the mode
 
-**Vault root** — the first that applies:
-1. a folder the task names explicitly (e.g. a sandbox copy),
-2. the `FPL_VAULT` environment variable,
-3. the current working directory, if it holds a `CLAUDE.md` titled "FPL Vault — Agent Protocol".
+**Quick mode is the default.** Work from the squad screenshot, player names, budget and decisions provided in this chat. Do not require Obsidian, `CLAUDE.md`, `Squad.md`, a team ID or any folder setup. Ask only for missing information needed for the requested analysis. A comparison of two players does not need the full squad; a team projection needs the XI and, for auto-subs, the ordered bench. Do not create notes, initialize folders or claim durable memory. Explain that history is not saved to files when the user asks to save or continue across chats. Scripts may cache API responses outside the workspace.
 
-Use that path for every read, write and `--vault` flag. **No vault yet?** Offer to create one: `node scripts/init-vault.js --dir <path> --season YYYY-YY` copies the starter vault from `assets/vault-template/` (never overwrites existing files), then ask the user for their squad (screenshot is fine) to fill `Squad.md`.
+**Workspace mode is optional.** Use it when the user selects an existing FPL workspace, sets `FPL_WORKSPACE` (legacy: `FPL_VAULT`), or is working in a folder whose `CLAUDE.md` has the heading `FPL Workspace — Agent Protocol` or the legacy `FPL Vault — Agent Protocol`. An explicit path wins over environment settings. A random `Squad.md` alone does not authorize note writes. Read local instructions before reading or writing workspace content; apply the baseline rules below in both modes and the workspace's extra conventions when present. If current evidence conflicts with saved data, flag the conflict before updating files.
 
-## Every request: start here
+Resolve the workspace path in this order: the user-named folder, `FPL_WORKSPACE`, `FPL_VAULT`, then the recognized current folder. Use it consistently for file access and `--workspace`. Explicit player inputs override the saved squad for that script invocation; this does not change the saved squad or opt the user into persistence.
 
-1. **Clock first.** Run `node scripts/news.js` (or check `bootstrap-static` `events`) and compare *now (UTC)* with the GW deadline. The user makes changes in the FPL app themselves, so time left decides how deep the analysis can go — open every answer with it. If the deadline has passed, say the team is locked and switch to "what to watch / what the live points say".
-2. **Fresh file listing.** `ls GW/` before saying a GW note does or doesn't exist — sync tools (Obsidian Sync, iCloud…) can drop a file in mid-session.
-3. **Read in the vault's order**: `Squad.md` → `Lessons.md` (checklist + L-rules) → latest `GW/GWnn.md` → `Season`/`Fixtures` only for the part you need. The latest GW note's *Decision path* is the memory of what was already decided — build on it instead of redoing it.
-4. **Pick the step** and read only its reference:
+No workspace yet? Continue in Quick mode. Only when the user requests persistent history, offer `/fpl-gw:init <folder> [season]` or `node "<skill-dir>/scripts/init-vault.js" --dir "<folder>" --season YYYY-YY`. This creates plain Markdown files without overwriting existing ones; Obsidian is optional. The legacy script name is retained for compatibility.
 
-| User intent (examples) | Reference | Script |
+## Rules in both modes
+
+- Check the current UTC time against the requested GW's API deadline before giving time-sensitive advice. Say when it has passed; the user makes all changes in FPL themselves. If live data is unavailable, state what could not be verified rather than inventing a countdown or current news.
+- Never invent points, ranks, prices, selling prices, ITB, free transfers or hits. Use `unknown` for missing facts, ask when they gate a recommendation, and distinguish a hypothetical scenario from the user's actual team.
+- Label model estimates `(est.)` or the user's chosen equivalent. Cite API endpoint/web source and date for external numbers. Script `fetched` labels currently reflect run time even on cache hits: distinguish this from actual retrieval time; use `--fresh` for volatile news and do not describe cached data as newly fetched.
+- Check publication date and season for news. Keep player/football terminology in English; otherwise use the user's language, or their workspace preference when provided.
+- Before finalizing a transfer or XI, check the available squad, budget/selling prices, positional and club limits, captain/vice, bench order and chip/FT/hit assumptions relevant to that plan. In Workspace mode also run `Lessons.md`'s checklist. Missing lessons are not a prerequisite for Quick mode.
+- The user chooses the plan. Do not describe a plan as confirmed before they confirm it, or imply that a saved plan changes their FPL account. Closed recorded results require new evidence and a dated correction; never silently overwrite them.
+- Flag changes to earlier advice and explain which new fact or assumption changed the conclusion. Do not guess information from a previous chat that is not available now.
+- FPL API is public and undocumented. Login-only/pre-deadline team details and selling prices need user evidence. During API maintenance, report the outage and retry later. Do not use `ep_next` as the main fixture-adjusted projection.
+
+## Start each request
+
+1. Identify the requested GW and check its deadline with `news.js` or API `bootstrap-static/` events. `news.js` without player input can show the deadline and fixtures in Quick mode.
+2. In **Quick mode**, use the current chat and gather only the missing inputs. Pass the player pool explicitly to scripts so an unrelated current-folder squad is not read.
+3. In **Workspace mode**, read `CLAUDE.md` → `Squad.md` → `Lessons.md` → the relevant/latest GW note → relevant Season/Fixtures sections. Re-list `GW/` before claiming a note is absent; follow any season-subfolder convention in local rules. Prior Decision path items are the recorded reasoning.
+4. Read only the references needed below. Their `Write` sections apply **only in Workspace mode**. In Quick mode return the same analysis in chat without requiring or creating any notes.
+
+| Intent | Reference | Script |
 |---|---|---|
-| check news, ใครเจ็บ, team news | `references/news.md` | `news.js` |
-| compare transfers, ซื้อใครดี, A vs B | `references/transfer.md` | `compare.js` + `projection.js --gws` |
-| who to captain, C ใคร, vice | `references/captain.md` | `compare.js` + `projection.js` |
-| opponent stats, เกมรับ/เกมรุก, matchup | `references/matchup.md` | `opponent.js` (+ xGstat via browser) |
-| projected points, คาดการณ์คะแนน, xPts | `references/projection.md` | `projection.js --sims` |
-| save plan, lock, close GW, results | `references/lock-close.md` | — |
+| News, injuries, availability | [news](references/news.md) | `news.js` |
+| Compare transfers | [transfer](references/transfer.md) | `compare.js`, `projection.js --gws` |
+| Captain / vice | [captain](references/captain.md) | `compare.js`, `projection.js` |
+| Opponent defence / attack | [matchup](references/matchup.md) | `opponent.js`, browser if available |
+| xPts / projected XI | [projection](references/projection.md) | `projection.js --sims` |
+| Confirm/save plan, review results | [lock and close](references/lock-close.md) | Chat summary or workspace updates |
 
-A question often spans several (e.g. "who to captain" usually needs matchup + projection). Load what the question needs; don't run everything by default.
+## Scripts: Node 18+, no dependencies
 
-## Scripts (Node 18+, no other dependencies)
+Resolve `scripts/` relative to this installed skill directory, not the user's working directory. Run scripts by absolute path; do not require the user to change directories or install Obsidian.
 
-All in `scripts/`; usage is in the header comment of each file. Shared flags: `--vault <dir>` (default: `FPL_VAULT`, then cwd), `--cache <dir>` (default: OS temp `fpl-cache`; pass a session scratch folder when you have one), `--fresh` to refetch volatile data. They print markdown tables plus a `source: … fetched <UTC>` line — copy that line into the note's Sources. Player specs are `Name:CLUB` (e.g. `N.Jackson:AVL`); the squad is read from `Squad.md` automatically.
+- `news.js [--gw N] [--players "Name:CLUB,..."] [--extra "Target:CLUB,..."]` — explicit `--players` replaces the saved squad; `--extra` adds targets to that selection or workspace squad. Without players or a squad, returns deadline and fixtures only.
+- `compare.js --players "A:CLUB,B:CLUB" [--n 6] [--from GW]` — comparison and fixture ticker, no workspace needed.
+- `opponent.js --teams ARS,CHE [--last 5]` — team statistics, no workspace needed.
+- `projection.js [--players "A:CLUB,B:CLUB"] [--xi "..."] [--bench "..."] [--captain X] [--vice Y] [--sims 20000] [--gw N | --gws A-B] [--extra "Target:CLUB"] [--if-starts "..."] [--minutes "Name:0"]` — player pool comes from `--players`, otherwise XI + bench, otherwise optional `Squad.md`. `--extra` adds targets. Captain/vice and scenario names must resolve uniquely within that pool; `Name:CLUB` is supported. Supply the full 11 and ordered bench for a meaningful team simulation; partial inputs are not a complete team forecast.
+- `init-vault.js --dir <folder> [--season YYYY-YY]` — optional Markdown workspace scaffold; never overwrites existing files.
 
-- `news.js [--gw N] [--players "Saliba:ARS,…"]` — deadline countdown, GW fixtures (local + kickoff), status/news/price change/net transfers, **yellow cards with ban-risk flag**, and live minutes/points while a GW is under way
-- `compare.js --players "A:CLB,B:CLB,…" [--n 6] [--from GW]` — standard comparison table (incl. G+A vs xGI over/under flag) + last 5 + fixture ticker from the next GW
-- `opponent.js --teams NFO,CRY [--last 5]` — results with team xG for/against, home/away split, league xGA/xGF ranks
-- `projection.js --xi "…11…" --bench "…4…" --captain X --vice Y [--sims 20000] [--gw N | --gws A-B] [--extra "Target:CLB"] [--if-starts "…"] [--minutes "Name:0"]` — per-player xPts, XI total, captain swap, "if starts" column, Monte Carlo range with auto-subs, multi-GW sums; fixtures already played use the real live points (`✔actual`)
-- `init-vault.js --dir <path> --season YYYY-YY` — scaffold a new vault
+Shared data-script options: `--workspace <dir>` (legacy `--vault`), then `FPL_WORKSPACE` / `FPL_VAULT`, then cwd for reading `Squad.md` if no explicit players. A missing explicitly selected workspace squad is an error; do not silently switch teams. `--cache <dir>` defaults to OS temp `fpl-cache`; `--fresh` refetches volatile data, not finished-GW live caches.
 
-Scripts count only finished fixtures, so they stay correct while a GW is under way.
+Projection limitations: DGWs are not modelled and can crash simulation; do not use the printed zero as a DGW forecast. Cards, own goals, penalty saves, form trends and chip multipliers are not modelled. Auto-subs are included only with `--sims`. Team xG is FPL-derived; keep other providers' numbers separate and flag disagreements. `news.js` times are TH (UTC+7), and null kickoff times can currently stop the script.
 
-## Answer format
+## Answer and persistence
 
-Use this order so the user (often on a phone) can scan it fast:
+Present deadline context, useful comparison tables, recommendation with estimates, material uncertainty/changed advice, and dated sources. Ask a follow-up only if a concrete choice or required input remains.
 
-1. `⏰` time left to the deadline (or "locked" + next kickoffs)
-2. Data table(s)
-3. Recommendation, labelled as your estimate (the vault defines the label, e.g. `(Claude ประเมิน)` / `(est.)`)
-4. `⚠️` anything that **contradicts an earlier answer** in this conversation or an earlier Decision-path item — name the item and what changed. Silent drift between answers is worse than being wrong once.
-5. `Sources:` — links for web sources; API lines with fetch time
-6. The vault's final-summary block (`Vault updated: …`)
-7. One closing question with the concrete choices still open
+**Quick mode:** keep plans, confirmation and results in chat. For a confirmed plan, recap transfers, XI, C/V, bench and risks using only known inputs; remind the user to act in FPL. For results, request evidence for missing scores and compare against any projection available in this chat. Do not emit `Vault updated` or claim files were saved. A request to save to disk requires a chosen workspace destination; initialization is optional, not a gate to analysis.
 
-Write prose in the language the vault `CLAUDE.md` sets; keep FPL/football terms and player names in English.
-
-## Writing to the vault
-
-- **Refine (news, analysis, comparisons, projections)**: append automatically to the current GW note — Team news as dated bullets, Decision path as the next number labelled as an estimate. Never delete or renumber old items; a correction goes in a new item that points back ("⚠️ correction to item 8: …").
-- **Lock**: only after the user explicitly confirms the plan. See `references/lock-close.md`.
-- Keep the body sections in the schema's order. Put extra material (projection tables, matchup tables) inside Decision path items rather than inventing new `##` sections.
-- When writing markdown via shell/node, backticks get eaten by bash — prefer the Edit tool for note text.
-
-## Gotchas (learned the hard way)
-
-1. **Re-list before claiming absence** — `ls GW/` fresh; glob/grep results can be stale after sync.
-2. **Vice rule**: FPL applies the vice-captain at the end of the GW regardless of kickoff order. If C plays 0′, V's points double even if V played earlier.
-3. **One framework**: projections use FPL-live team xG only. When another source (xGstat, FFS) gives different numbers, show both, say which the projection used, and flag the contradiction — providers rank the same defence differently.
-4. **Clock every turn**: compare UTC now vs `deadline_time`; say how long is left or that it has passed.
-5. **Symmetric context**: a factor that favours one option ("opponent played midweek", "missing defenders") must be checked for the alternative too.
-6. **Search results go stale**: news searches often return last season's articles — check the date before using one, and read the page directly when summaries are thin.
-7. **Blocked sources**: Understat, Sofascore, and xGstat via curl return bot pages — don't retry them. xGstat works through an in-app browser if one is available. Shot locations / home-away splits on xGstat are Pro-only.
-8. **FPL API quirks** live in the vault `CLAUDE.md` (`ep_next` ≈ form, "The game is being updated", login-only data → ask for a screenshot).
+**Workspace mode:** Plan → Refine → Lock → Close follows local `CLAUDE.md` and [lock-close](references/lock-close.md). Refine appends dated Team news and numbered Decision path items; never remove or renumber old reasoning. Correct earlier items by appending a reference to the old item. Lock requires user confirmation. Keep schema headings in order and extra analysis inside Decision path items. Finish file writes with the workspace's summary contract (legacy `Vault updated` is supported); no update block is needed for read-only answers.

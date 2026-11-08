@@ -1,7 +1,7 @@
 // xPts projection (Claude ประเมิน). Model and caveats: references/projection.md
 // usage: node projection.js [--gw 10 | --gws 11-13] [--xi "Raya,Konsa,..."] [--bench "Dubravka,Hall,Sangaré,Egan"]
 //        [--captain Isak] [--vice Haaland] [--extra "Jackson:AVL"] [--if-starts "Isak,Haaland"] [--minutes "Konsa:60"]
-//        [--sims 20000] [--vault <FPL dir>] [--cache <dir>]
+//        [--players "Name:CLUB,..."] [--sims 20000] [--workspace <dir>] [--cache <dir>]
 // --sims needs --xi and simulates one score distribution per GW (auto-subs from --bench order, vice if C plays 0′)
 const F = require('./lib/fpl');
 
@@ -17,6 +17,9 @@ const rpois = (l) => { let k = 0, p = 1; const L = Math.exp(-l); do { k++; p *= 
 (async () => {
   const args = F.parseArgs(process.argv);
   const c = F.ctx(args);
+  const list = (k) => (args[k] ? String(args[k]).split(',').map((s) => s.trim()).filter(Boolean) : []);
+  const specs = args.players ? list('players') : args.xi ? [...list('xi'), ...list('bench')] : F.readSquad(c, true);
+  if (!specs.length && !list('extra').length) throw new Error('Supply --players "Name:CLUB,..." or --xi "..." [--bench "..."] for Quick mode, or --workspace <dir> with a populated Squad.md');
   const bs = await F.bootstrap(c);
   const fx = await F.fixturesAll(c);
   const { T } = F.teamMaps(bs);
@@ -24,17 +27,15 @@ const rpois = (l) => { let k = 0, p = 1; const L = Math.exp(-l); do { k++; p *= 
   if (args.gws) { const [a, b] = String(args.gws).split('-').map(Number); gws = Array.from({ length: (b || a) - a + 1 }, (_, i) => a + i); }
   else gws = [args.gw ? +args.gw : F.nextEvent(bs).id];
   const { ts, avg } = await F.teamXG(c, bs, fx);
-  const list = (k) => (args[k] ? String(args[k]).split(',').map((s) => s.trim()).filter(Boolean) : []);
-  const squad = F.readSquad(c).map((s) => F.findPlayer(bs, s));
-  const extra = list('extra').map((s) => F.findPlayer(bs, s));
-  const byName = (n) => [...squad, ...extra].find((p) => F.norm(p.web_name) === F.norm(n) || F.norm(p.web_name).includes(F.norm(n)));
-  const need = (n, flag) => { const p = byName(n); if (!p) throw new Error(`--${flag} "${n}" not in squad/extra`); return p; };
-  const xiP = list('xi').map((n) => need(n, 'xi'));
+  const squad = [...new Map(specs.map((s) => { const p = F.findPlayer(bs, s); return [p.id, p]; })).values()];
+  const extra = [...new Map(list('extra').map((s) => { const p = F.findPlayer(bs, s); return [p.id, p]; })).values()].filter(p => !squad.some(s => s.id === p.id));
+  const need = (n) => F.findPlayer({ ...bs, elements: [...squad, ...extra] }, n);
+  const xiP = list('xi').map((n) => need(n));
   const xi = new Set(xiP.map((p) => p.id));
-  const benchP = list('bench').map((n) => need(n, 'bench'));
-  const cap = args.captain && need(args.captain, 'captain'), vice = args.vice && need(args.vice, 'vice');
-  const ifStarts = new Set([...list('if-starts').map((n) => need(n, 'if-starts')), cap, vice, ...extra].filter(Boolean).map((p) => p.id));
-  const minOv = Object.fromEntries(list('minutes').map((s) => { const [n, m] = s.split(':'); return [need(n, 'minutes').id, +m]; }));
+  const benchP = list('bench').map((n) => need(n));
+  const cap = args.captain && need(args.captain), vice = args.vice && need(args.vice);
+  const ifStarts = new Set([...list('if-starts').map((n) => need(n)), cap, vice, ...extra].filter(Boolean).map((p) => p.id));
+  const minOv = Object.fromEntries(list('minutes').map((s) => { const [n, m] = s.split(':'); return [need(n).id, +m]; }));
   const sims = +(args.sims || 0);
   if (sims && !xi.size) throw new Error('--sims needs --xi');
 

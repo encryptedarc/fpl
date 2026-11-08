@@ -1,6 +1,12 @@
 # Step: Lock and Close
 
-CLAUDE.md §4 steps 3–4 define what changes; this file is the checklist.
+## Quick mode — chat only
+
+On confirmation, recap the known transfers, XI, C/V, bench and accepted risks in chat. List missing inputs as pending; do not create notes, require setup or claim to save anything. Remind the user to make changes in FPL. For results, use screenshot/API evidence and compare with any projection available in this chat; keep unverified scores/ranks `unknown`. If the user wants files saved, ask for a workspace destination and offer optional initialization. Do not imply access to decisions from unavailable previous chats.
+
+## Workspace mode — persistent history
+
+The remaining checklists apply only to an opted-in Markdown workspace. Its CLAUDE.md §4 steps 3–4 define file changes. Obsidian is not required.
 
 ## Lock — only after the user confirms the plan
 

@@ -26,7 +26,7 @@ const created = [], skipped = [];
 })(src, dst);
 fs.mkdirSync(path.join(dst, 'GW'), { recursive: true });
 
-console.log(`FPL vault at ${dst} (season ${season})`);
+console.log(`FPL Markdown workspace at ${dst} (season ${season}) — Obsidian optional`);
 console.log(`created: ${created.join(', ') || 'none'}`);
 if (skipped.length) console.log(`kept existing: ${skipped.join(', ')}`);
 console.log('next: fill Squad.md (Pos | Player | Club), set the language line in CLAUDE.md §1, optionally your FPL team_id in §0');

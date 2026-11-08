@@ -16,7 +16,10 @@ tags: [fpl, dashboard]
 | GW | Pts | Avg | +/− | GW rank | C (pts) | Transfers | Chip |
 |---|---|---|---|---|---|---|---|
 
-## Dataview (auto)
+## Dataview (optional)
+
+Only rendered by Obsidian + Dataview. The Markdown GW log above remains usable in any editor.
+
 ```dataview
 TABLE points AS "Pts", avg AS "Avg", (points - avg) AS "+/−", captain AS "C", captain_pts AS "C pts", transfers AS "TF", chip AS "Chip"
 FROM "GW"
