@@ -1,0 +1,18 @@
+{
+  "name": "fpl",
+  "owner": {
+    "name": "encryptedarc"
+  },
+  "metadata": {
+    "description": "Fantasy Premier League tools for Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "fpl-gw",
+      "source": "./plugins/fpl-gw",
+      "description": "FPL gameweek co-pilot: team news, transfer comparisons, captain picks, opponent matchups, xPts projections with Monte Carlo ranges — kept in a markdown/Obsidian vault.",
+      "version": "0.1.0",
+      "keywords": ["fpl", "fantasy-premier-league", "football", "obsidian"]
+    }
+  ]
+}
