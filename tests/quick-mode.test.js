@@ -62,6 +62,7 @@ test('projection accepts players without XI or workspace', t => {
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /Alpha/);
   assert.match(r.stdout, /Beta/);
+  assert.match(r.stdout, /projection \(est\.\)/);
   assert.doesNotMatch(r.stdout, /NaN/);
   assert.deepEqual(fs.readdirSync(cwd), []);
 });
@@ -157,4 +158,38 @@ test('optional initialization creates plain Markdown and never overwrites existi
   assert.ok(fs.existsSync(path.join(workspace, 'Season 2026-27.md')));
   assert.ok(fs.existsSync(path.join(workspace, 'Templates/GW Template.md')));
   assert.equal(fs.existsSync(path.join(workspace, '.obsidian')), false);
+});
+
+test('copied standalone skill runs outside the plugin without harness environment variables', t => {
+  const { root, cwd, workspace, run } = setup(t);
+  const standalone = path.join(root, 'any harness skills', 'fpl-gw');
+  fs.cpSync(path.dirname(scripts), standalone, { recursive: true });
+  const env = { ...process.env, FPL_WORKSPACE: '', FPL_VAULT: '' };
+  delete env.CLAUDE_PLUGIN_ROOT;
+  delete env.CLAUDE_PROJECT_DIR;
+  const cache = path.join(root, 'cache');
+  for (const [script, args, expected] of [
+    ['news.js', ['--players', 'Alpha:AAA'], /Alpha/],
+    ['projection.js', ['--players', 'Alpha:AAA', '--gw', '2'], /Alpha/],
+    ['init-vault.js', ['--dir', workspace, '--season', '2026-27'], /created:/],
+  ]) {
+    const r = spawnSync(process.execPath, [path.join(standalone, 'scripts', script), '--cache', cache, ...args], { cwd, env, encoding: 'utf8', timeout: 10000 });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, expected);
+  }
+  assert.ok(fs.existsSync(path.join(workspace, 'AGENTS.md')));
+  assert.deepEqual(fs.readdirSync(cwd), []);
+});
+
+test('initializing a legacy workspace keeps its existing rules as the instruction target', t => {
+  const { workspace, run } = setup(t);
+  const rules = '# FPL Vault — Agent Protocol\n\nCustom rules that must remain authoritative.\n';
+  fs.writeFileSync(path.join(workspace, 'CLAUDE.md'), rules);
+  const r = run('init-vault.js', ['--dir', workspace, '--season', '2026-27']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(fs.readFileSync(path.join(workspace, 'CLAUDE.md'), 'utf8'), rules);
+  const entry = fs.readFileSync(path.join(workspace, 'AGENTS.md'), 'utf8');
+  const target = entry.match(/\]\(([^)]+)\)/);
+  assert.ok(target, 'Generated entry point must link to the existing customized rules');
+  assert.equal(fs.readFileSync(path.resolve(workspace, target[1]), 'utf8'), rules);
 });

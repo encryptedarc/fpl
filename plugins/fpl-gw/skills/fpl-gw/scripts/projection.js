@@ -1,4 +1,4 @@
-// xPts projection (Claude ประเมิน). Model and caveats: references/projection.md
+// xPts projection (est.). Model and caveats: references/projection.md
 // usage: node projection.js [--gw 10 | --gws 11-13] [--xi "Raya,Konsa,..."] [--bench "Dubravka,Hall,Sangaré,Egan"]
 //        [--captain Isak] [--vice Haaland] [--extra "Jackson:AVL"] [--if-starts "Isak,Haaland"] [--minutes "Konsa:60"]
 //        [--players "Name:CLUB,..."] [--sims 20000] [--workspace <dir>] [--cache <dir>]
@@ -125,7 +125,7 @@ const rpois = (l) => { let k = 0, p = 1; const L = Math.exp(-l); do { k++; p *= 
     return total;
   }
 
-  console.log(`# GW${gws.join('–')} projection (Claude ประเมิน / est.) — FPL API bootstrap-static/ + fixtures/ + element-summary/ + event/{finished}/live/ — fetched ${F.fmtUTC()}`);
+  console.log(`# GW${gws.join('–')} projection (est.) — FPL API bootstrap-static/ + fixtures/ + element-summary/ + event/{finished}/live/ — fetched ${F.fmtUTC()}`);
   console.log(`model: λ = team xGF × opp xGA ÷ league avg ${avg.toFixed(2)} (±${HOME_ADV * 100}% H/A) · minutes = last-5 · CS Poisson · DefCon hit-rate · bonus/90 · no cards`);
   const sumX = {}; const summary = [];
   for (const gw of gws) {

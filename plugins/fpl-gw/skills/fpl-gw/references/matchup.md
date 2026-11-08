@@ -5,8 +5,8 @@ Use when the user asks how leaky an opponent is, where they concede, or wants de
 ## Data sources (in this order)
 
 1. **FPL-derived** (always): `node scripts/opponent.js --teams <opps>,<our attacking teams>` — results, team xG for/against (sum of player `expected_goals`, own goals excluded), last 5, home/away, league xGA/xGF ranks. This is the projection's source of truth (one framework — don’t mix providers inside the projection).
-2. **xGstat via an in-app browser, if this session has one** (situational detail): open
-   `https://www.xgstat.com/teams/<team-slug>?season=<id>&competition=premier-league` then `get_page_text`. Slugs look like `crystal-palace`, `nottingham-forest`, `manchester-city`. Find the season id from a WebSearch result URL if unknown (2026-27 was `185618`).
+2. **xGstat via a browser/page-reading capability, if available** (situational detail): open
+   `https://www.xgstat.com/teams/<team-slug>?season=<id>&competition=premier-league` then read the page using the host's supported browser tools. Slugs look like `crystal-palace`, `nottingham-forest`, `manchester-city`. Find the season id from a current search-result URL if unknown (2026-27 was `185618`).
    Free fields worth taking:
    - Key stats: xG, shots, goals conceded, xGA, **shots faced** (+ league rank), clean sheets, PPDA
    - **Goals & xG by situation**: open play / set pieces / penalties / own goals, conceded vs xGA
@@ -14,7 +14,7 @@ Use when the user asks how leaky an opponent is, where they concede, or wants de
    - Shape (formation), style tags (low block, counter-attacking, combative…), last XI, win probability, minutes share
    - Pro-only (don't promise): shots by location, home/away table, playing-style detail
    - In a team's "Next 5" table, `Opp. xGA rank` / `Shots faced` describe the **opponent**, likely venue-specific
-3. **WebSearch** for narrative (injured CBs, tactical pieces). Keep source + date.
+3. **Available web search** for narrative (injured CBs, tactical pieces). Keep source + date.
 
 Understat, Sofascore, and xGstat via curl return bot pages — skip them.
 

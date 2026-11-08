@@ -6,7 +6,7 @@ On confirmation, recap the known transfers, XI, C/V, bench and accepted risks in
 
 ## Workspace mode — persistent history
 
-The remaining checklists apply only to an opted-in Markdown workspace. Its CLAUDE.md §4 steps 3–4 define file changes. Obsidian is not required.
+The remaining checklists apply only to an opted-in Markdown workspace. Its shared workspace rules (AGENTS.md, or existing legacy rules) §4 steps 3–4 define file changes. Obsidian is not required.
 
 ## Lock — only after the user confirms the plan
 
@@ -29,6 +29,6 @@ Needs evidence (screenshot or FPL API `entry/` endpoints if `team_id` is known);
 
 1. `GW/GWnn.md`: frontmatter `points avg highest gw_rank overall_rank captain_pts bench_pts`, `status: closed`; fill `## Result` (per-player pts) and `## Review` (what worked / what didn't / lessons).
 2. `Season YYYY-YY.md`: add a GW-log row and a Captain-record row; update Chips if used.
-3. `Lessons.md`: new lesson → `### L{n+1}` in CLAUDE.md §5 format; repeat lesson → append `[[GWnn]]` to the existing one. Patterns section for 1-sample observations.
+3. `Lessons.md`: new lesson → `### L{n+1}` in the shared rules' §5 format; repeat lesson → append `[[GWnn]]` to the existing one. Patterns section for 1-sample observations.
 4. Compare result vs the projection item and say where the model missed (minutes? captain? CS?) — this is how the model improves.
 5. After the GW is closed, edits need new evidence + a `> correction YYYY-MM-DD:` line (Hard Rule 3).

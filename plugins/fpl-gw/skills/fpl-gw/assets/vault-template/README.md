@@ -25,4 +25,4 @@ The Season dashboard includes normal Markdown tables. Its optional Dataview bloc
 
 Open your agent in this folder, or set `FPL_WORKSPACE` to this path. Scripts also accept `--workspace <folder>`; legacy `--vault` and `FPL_VAULT` remain supported. Explicit `--players` selects a player pool instead of reading the saved squad. With news, use `--extra` to add targets to the saved squad.
 
-Agent rules: [CLAUDE.md](CLAUDE.md). Other agents start with [AGENTS.md](AGENTS.md).
+Shared rules: [AGENTS.md](AGENTS.md). The optional CLAUDE.md compatibility pointer refers to the same rules; the workspace does not require a particular harness.

@@ -17,7 +17,7 @@ Rules learned from real results. Run the checklist before confirming every GW.
 - [ ] Anyone one yellow card from a ban?
 
 ## Lessons
-<!-- Starter rules — keep, edit or delete them. New lessons go below as L{n+1} with a [[GWnn]] link (CLAUDE.md §5). -->
+<!-- Starter rules — keep, edit or delete them. New lessons go below as L{n+1} with a [[GWnn]] link (AGENTS.md §5). -->
 
 ### L1
 **Lineup evidence beats unfinished transfer rumours** — don't bench or avoid a player because of a rumour that hasn't happened.

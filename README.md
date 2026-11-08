@@ -3,7 +3,7 @@
 </p>
 <h1 align="center">fpl-gw</h1>
 <p align="center"><strong>Plan your gameweek. Keep the decisions that matter.</strong></p>
-<p align="center">Claude Code plugin สำหรับวางแผน Fantasy Premier League<br>เช็กข่าว · เทียบ transfers · เลือก captain · ประเมิน xPts<br><strong>เริ่มในแชตได้ทันที — ไม่ต้องมี Obsidian หรือ workspace</strong></p>
+<p align="center">FPL AI Assistant — Skill สำหรับ AI harness ที่รองรับ Skills<br>เช็กข่าว · เทียบ transfers · เลือก captain · ประเมิน xPts<br><strong>เริ่มในแชตได้ทันที — ไม่ต้องมี Obsidian หรือ workspace</strong></p>
 <p align="center">
   <a href="#เริ่มใช้งาน">เริ่มใช้งาน</a> · <a href="#ลองถามแบบนี้">ตัวอย่างคำถาม</a> · <a href="#workspace-mode-เก็บประวัติเป็นตัวเลือก">เก็บประวัติ</a> · <a href="#scripts">Scripts</a> · <a href="#ข้อจำกัดที่ควรรู้">ข้อจำกัด</a>
 </p>
@@ -24,18 +24,17 @@
 
 ## เริ่มใช้งาน
 
-ต้องมี **Claude Code** และ **Node.js 18+** สำหรับ scripts — ใช้เฉพาะ Node built-ins ไม่ต้องรัน `npm install`
+ใช้กับ AI harness ที่โหลด Skills และอ่านไฟล์ได้ เช่น Claude Code, Codex หรือ OpenCode โดยเลือกวิธีเพิ่ม skill ตาม harness ที่ใช้ ไม่ต้องมี plugin system เฉพาะค่าย
 
-### 1. ติดตั้ง plugin
+สำหรับ scripts ต้องมี **Node.js 18+**, สิทธิ์เรียกคำสั่ง และ network access — ใช้เฉพาะ Node built-ins ไม่ต้องรัน `npm install` การเก็บ workspace ต้องมีสิทธิ์เขียนไฟล์ ส่วน web search/browser เป็นตัวเลือกสำหรับข่าวและข้อมูลเพิ่มเติม หากไม่มีเครื่องมือบางอย่าง agent ต้องแจ้งข้อจำกัดและใช้เฉพาะหลักฐานที่เข้าถึงได้
 
-รันใน Claude Code:
+### 1. เพิ่ม Skill ให้ harness ที่ใช้
 
-```text
-/plugin marketplace add encryptedarc/fpl
-/plugin install fpl-gw@fpl
-```
+1. ดาวน์โหลด [portable skill v0.2.0](https://github.com/encryptedarc/fpl/releases/download/v0.2.0/fpl-gw-v0.2.0.zip) แล้วแตก ZIP หรือ clone repo นี้
+2. คัดลอกโฟลเดอร์ [fpl-gw](plugins/fpl-gw/skills/fpl-gw/) **ทั้งโฟลเดอร์** ไปยัง skills directory ที่ harness ของคุณกำหนด หรือใช้วิธี import skill ที่ harness รองรับ
+3. เก็บ `SKILL.md`, `scripts/`, `references/` และ `assets/` ไว้ด้วยกัน แล้วโหลด skill ตามวิธีของ harness นั้น
 
-เปิด session ใหม่หรือ restart Claude Code เพื่อโหลด skill และ command อัปเดต marketplace ภายหลังด้วย `/plugin marketplace update fpl`
+ไม่จำเป็นต้องติดตั้ง Claude Code plugin เพื่อใช้ core skill หาก harness ไม่ค้นพบ skill อัตโนมัติ ให้ระบุ path ของ `SKILL.md` และให้ agent อ่านพร้อม resources ที่เกี่ยวข้อง
 
 ### 2. ส่งทีม แล้วถามได้เลย
 
@@ -46,7 +45,18 @@
 
 หรือเริ่มจากคำถามสั้น ๆ เช่น **“เทียบ Saka กับ Palmer ให้หน่อย”** โดยไม่ต้องส่งทั้งทีม Agent จะถามเฉพาะข้อมูลที่จำเป็น เช่น selling price หรือ ITB หากต้องตรวจงบ
 
-**Quick mode ไม่ต้องรัน `/fpl-gw:init` และไม่ต้องมี `CLAUDE.md` หรือ `Squad.md`** ไม่มีการสร้างโน้ตอัตโนมัติ; scripts ยังใช้ cache API ใน OS temp ได้ หากเริ่มแชตใหม่ให้ส่งทีมและแผนล่าสุดอีกครั้ง หรือเลือกใช้ Workspace mode ด้านล่าง
+**Quick mode ไม่ต้อง initialize workspace และไม่ต้องมีไฟล์กฎหรือ `Squad.md`** ไม่มีการสร้างโน้ตอัตโนมัติ; scripts ยังใช้ cache API ใน OS temp ได้ หากเริ่มแชตใหม่ให้ส่งทีมและแผนล่าสุดอีกครั้ง หรือเลือกใช้ Workspace mode ด้านล่าง
+
+### Optional: Claude Code plugin adapter
+
+เฉพาะผู้ที่ใช้ Claude Code สามารถติดตั้ง wrapper นี้แทนการคัดลอก skill เอง:
+
+```text
+/plugin marketplace add encryptedarc/fpl
+/plugin install fpl-gw@fpl
+```
+
+โหลด plugin ใหม่ตามวิธีของ Claude Code อัปเดต marketplace ด้วย `/plugin marketplace update fpl` คำสั่ง `/fpl-gw:init` และตัวแปร `CLAUDE_PLUGIN_ROOT` เป็นของ adapter นี้เท่านั้น ไม่ใช่ requirement ของ core skill
 
 ## ลองถามแบบนี้
 
@@ -67,12 +77,14 @@
 อยากให้แชตถัดไปอ่านทีม แผนและเหตุผลเดิมได้ ให้สร้าง workspace ในโฟลเดอร์ธรรมดา:
 
 ```text
-/fpl-gw:init ~/FPL 2026-27
+node "<skill-dir>/scripts/init-vault.js" --dir "/path/to/FPL" --season 2026-27
 ```
 
-บน Windows ใช้ absolute path ได้ หากมีช่องว่างให้ครอบด้วย quotes ตัว scaffold เก็บไฟล์เดิมไว้โดยไม่เขียนทับ จากนั้นส่ง screenshot ให้ agent กรอก `Squad.md` และแจ้งภาษาที่ต้องการใน `CLAUDE.md` §1 ข้อ 8; FPL team ID เป็นตัวเลือก
+แทน `<skill-dir>` ด้วย path ของโฟลเดอร์ fpl-gw ที่ติดตั้งไว้ ผู้ใช้ Claude Code adapter จะใช้ `/fpl-gw:init <folder> 2026-27` แทนได้
 
-เปิด Claude Code ใน workspace หรือกำหนด `FPL_WORKSPACE` เป็น path ของโฟลเดอร์ สำหรับ scripts ใช้ `--workspace "<path>"` ได้ โดย `--vault` และ `FPL_VAULT` ยังรองรับของเดิม ไม่ต้องย้ายไฟล์หรือสร้าง workspace ใหม่
+บน Windows ใช้ absolute path ได้ หากมีช่องว่างให้ครอบด้วย quotes ตัว scaffold เก็บไฟล์เดิมไว้โดยไม่เขียนทับ จากนั้นส่ง screenshot ให้ agent กรอก `Squad.md` และแจ้งภาษาที่ต้องการใน `AGENTS.md` §1 ข้อ 8; FPL team ID เป็นตัวเลือก
+
+เปิด AI harness ใน workspace หรือระบุ path ให้ agent หรือกำหนด `FPL_WORKSPACE` เป็น path ของโฟลเดอร์ สำหรับ scripts ใช้ `--workspace "<path>"` ได้ โดย `--vault` และ `FPL_VAULT` ยังรองรับของเดิม ไม่ต้องย้ายไฟล์หรือสร้าง workspace ใหม่; กฎเดิมใน `CLAUDE.md` ยังรองรับ และ initializer ไม่เขียนทับไฟล์เดิม
 
 ### Workflow รายสัปดาห์
 
@@ -91,8 +103,8 @@
 
 ```text
 FPL/
-├── CLAUDE.md                 # กฎ, schema และลำดับการอ่านสำหรับ agent
-├── AGENTS.md                 # ชี้ agent อื่นไปที่ CLAUDE.md
+├── AGENTS.md                 # กฎกลาง, schema และลำดับการอ่าน
+├── CLAUDE.md                 # compatibility pointer สำหรับบาง harness
 ├── README.md                 # คู่มือของ workspace
 ├── Squad.md                  # ทีมปัจจุบัน, ITB และ watchlist
 ├── Lessons.md                # Checklist และบทเรียน
@@ -106,7 +118,7 @@ FPL/
 
 ## Scripts
 
-ตัวอย่างนี้รันจาก **root ของ repo** ใช้ Quick mode โดยไม่ต้องมี workspace ชื่อผู้เล่นต้องตรงกับ API ของ season ที่ใช้อยู่ หากใช้ plugin agent จะเรียก scripts จากตำแหน่งติดตั้งให้
+ตัวอย่างนี้รันจาก **root ของ repo** ใช้ Quick mode โดยไม่ต้องมี workspace ชื่อผู้เล่นต้องตรงกับ API ของ season ที่ใช้อยู่ เมื่อติดตั้ง skill แยก ให้ agent resolve scripts จากโฟลเดอร์ skill และเรียกด้วย absolute path
 
 ```bash
 # ข่าวของผู้เล่นที่ระบุโดยตรง

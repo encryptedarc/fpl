@@ -117,3 +117,24 @@ Edit the provided selected logo, candidate 06. Remove ONLY the small number "06"
 - ยังไม่ได้ทดสอบ plugin install ใน Claude Code หรือ live API รอบนี้
 
 Findings 1–3 ด้านบนอ้างตำแหน่งจาก baseline ก่อนแก้ Quick mode และ **ยังยืนยันได้ทั้งหมด**: DGW simulation, null kickoff และ cache timestamp ไม่ได้ถูกแก้ในงานนี้ โลโก้ใช้ภาพ 6 ที่ผู้ใช้เลือก การเผยแพร่รอบนี้ไม่รวมการแก้ findings เหล่านี้
+
+## อัปเดต: Portable skill สำหรับหลาย harness
+
+Core skill ไม่ต้องมี Claude Code, plugin system, slash command หรือตัวแปร environment เฉพาะผู้ให้บริการ การติดตั้งหลักใน README เป็นการคัดลอกโฟลเดอร์ skill ทั้งชุดเข้า skills directory ของ harness หรือให้ agent อ่าน SKILL.md พร้อม resources ที่เกี่ยวข้อง ส่วน Claude marketplace/command คงไว้เป็น optional adapter เท่านั้น
+
+- `SKILL.md` ระบุ capabilities ที่ใช้จริง: อ่านไฟล์, เรียก Node.js 18+ และ network สำหรับ data scripts; เขียนไฟล์เฉพาะการเก็บ workspace ส่วน search/browser เป็น optional และต้องแจ้งเมื่อไม่มีเครื่องมือ
+- Workspace ใหม่เก็บ protocol เต็มใน `AGENTS.md`; `CLAUDE.md` เป็น compatibility pointer กฎเดิมใน workspace เก่ายังอ่านต่อได้และไม่ถูกเขียนทับ หากมี legacy CLAUDE.md แต่ยังไม่มี AGENTS.md initializer สร้าง pointer กลับไปยังกฎเดิมแทนการแทนที่กฎนั้น
+- References ใช้ความสามารถ search/read-page/browser ของ host แทนการระบุชื่อเครื่องมือ, mode หรือ agent เฉพาะ
+- Projection ใช้ label `(est.)` แทน attribution ของผู้ให้บริการ
+- คงชื่อ path `plugins/fpl-gw/skills/fpl-gw/` ไว้เพื่อรักษา plugin เดิม โฟลเดอร์ชั้นในเป็น portable artifact ที่คัดลอกแยกได้ ไม่ต้องนำ adapter ไปด้วย
+- เพิ่ม regression test ที่คัดลอก skill ไป path อื่นที่มีช่องว่าง แล้วรัน news, projection และ initializer โดยไม่มี Claude environment variables รวมถึงการ preserve legacy rules
+- ตรวจคำแนะนำแบบ manual สำหรับ Quick mode, workspace ใหม่/เดิม และ host ที่ไม่มี search/browser ไม่อ้างว่าได้รัน end-to-end กับ native harness ทุกตัว
+
+ไฟล์ที่เปลี่ยนรอบนี้: README, marketplace adapter description, init command adapter, SKILL, workspace templates (AGENTS/CLAUDE/README/Lessons), references (news/matchup/transfer/lock-close), scripts (projection/init-vault) และ tests/quick-mode.test.js ไม่รวม social assets ที่ยังเป็นไฟล์งานภาพแยกต่างหาก
+
+## Release v0.2.0
+
+- Plugin และ marketplace manifests ใช้ version 0.2.0 ตรงกัน
+- Portable ZIP บรรจุโฟลเดอร์ fpl-gw ทั้งชุด 21 ไฟล์ พร้อม SHA-256 checksum; ไม่รวม Claude plugin adapter หรือ social assets
+- Pre-release validation: tests 14/14, syntax 6 scripts, skill validator, documentation links และการแตก ZIP แล้วรัน initializer ผ่าน
+- Release notes ระบุข้อจำกัด DGW, null kickoff และ cache timestamp ตามเดิม ไม่มีการอ้าง native integration test ของทุก harness หรือ live API

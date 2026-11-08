@@ -6,7 +6,7 @@ Goal: a decision the user can make in one look, with the budget already proven.
 
 1. `node scripts/compare.js --players "<in-1>,<in-2>,<out>" [--from <GW>]` — always include the player being sold as the baseline column. The ticker starts at the next GW by default; pass `--from` when planning further ahead.
    - The `G+A vs xGI` row flags over/under-performance including assists (e.g. 3 assists from 0.58 xA).
-2. **Explain the minutes.** For every buy target with a 0′ or an early sub-off in the last 5, find out why (WebSearch: `<player> injury` / `<player> minutes <manager>` + month/year; read the page if the summary is thin). An injury that has healed, rotation for Europe, and a tactical role that ends at 65′ each mean something different for the next 6 GWs. Mark it `(single source)` when only one source says it.
+2. **Explain the minutes.** For every buy target with a 0′ or an early sub-off in the last 5, find out why (search the web using the host's available tool: `<player> injury` / `<player> minutes <manager>` + month/year; read the page if the summary is thin). An injury that has healed, rotation for Europe, and a tactical role that ends at 65′ each mean something different for the next 6 GWs. Mark it `(single source)` when only one source says it.
 3. Budget math **before** recommending (never say a move works until the numbers do):
    - Selling price: if current price < buy price, sell = current; if it rose, sell = buy + floor(rise/2), using integer £0.1m units. Use prices supplied by the user or screenshot, or `Squad.md` in Workspace mode. If buy/selling price is missing, ask or keep affordability conditional.
    - If ITB is `unknown`, state the minimum ITB each option needs (e.g. "A needs ITB ≥ £3.2m") and make the recommendation conditional on it. Don't invent ITB.
@@ -28,4 +28,4 @@ The `compare.js` table (trim rows that don't matter for this decision), then:
 ## Write (Workspace mode only)
 
 Decision-path item with the table, budget lines, recommendation and checklist. Leave `## Transfers` as draft until lock.
-If the question is about a GW whose note doesn't exist yet, that is CLAUDE.md §4 step 1 (Plan): create `GW/GWnn.md` from `Templates/GW Template.md` with `status: planning` and put the analysis there as Decision path item 1.
+If the question is about a GW whose note doesn't exist yet, follow the shared workspace rules' §4 step 1 (Plan): create `GW/GWnn.md` from `Templates/GW Template.md` with `status: planning` and put the analysis there as Decision path item 1.

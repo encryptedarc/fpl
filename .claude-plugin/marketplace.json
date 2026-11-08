@@ -4,14 +4,14 @@
     "name": "encryptedarc"
   },
   "metadata": {
-    "description": "Fantasy Premier League tools for Claude Code"
+    "description": "Claude Code adapter for the portable fpl-gw skill"
   },
   "plugins": [
     {
       "name": "fpl-gw",
       "source": "./plugins/fpl-gw",
       "description": "FPL gameweek co-pilot: news, transfers, captain picks, matchups and xPts in chat, with optional plain Markdown history. No Obsidian required.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "keywords": ["fpl", "fantasy-premier-league", "football", "obsidian"]
     }
   ]

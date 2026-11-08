@@ -13,6 +13,7 @@ if (!/^\d{4}-\d{2}$/.test(season)) { console.error('--season must look like 2026
 
 const src = path.join(__dirname, '..', 'assets', 'vault-template');
 const dst = path.resolve(args.dir);
+const legacyRules = fs.existsSync(path.join(dst, 'CLAUDE.md')) && !fs.existsSync(path.join(dst, 'AGENTS.md'));
 const created = [], skipped = [];
 (function copy(from, to) {
   fs.mkdirSync(to, { recursive: true });
@@ -20,7 +21,10 @@ const created = [], skipped = [];
     const s = path.join(from, name), d = path.join(to, name.replace(/\{\{SEASON\}\}/g, season));
     if (fs.statSync(s).isDirectory()) { copy(s, d); continue; }
     if (fs.existsSync(d)) { skipped.push(path.relative(dst, d)); continue; }
-    fs.writeFileSync(d, fs.readFileSync(s, 'utf8').replace(/\{\{SEASON\}\}/g, season));
+    const content = legacyRules && path.relative(src, s) === 'AGENTS.md'
+      ? '# AGENTS.md\n\nThis workspace already has customized rules in [CLAUDE.md](CLAUDE.md). Read and follow that file; initialization preserves the existing rules.\n'
+      : fs.readFileSync(s, 'utf8').replace(/\{\{SEASON\}\}/g, season);
+    fs.writeFileSync(d, content);
     created.push(path.relative(dst, d));
   }
 })(src, dst);
@@ -29,4 +33,4 @@ fs.mkdirSync(path.join(dst, 'GW'), { recursive: true });
 console.log(`FPL Markdown workspace at ${dst} (season ${season}) — Obsidian optional`);
 console.log(`created: ${created.join(', ') || 'none'}`);
 if (skipped.length) console.log(`kept existing: ${skipped.join(', ')}`);
-console.log('next: fill Squad.md (Pos | Player | Club), set the language line in CLAUDE.md §1, optionally your FPL team_id in §0');
+console.log('next: fill Squad.md (Pos | Player | Club), set the language and optional FPL team_id in the workspace rules (AGENTS.md; existing legacy rules remain supported)');
