@@ -30,7 +30,7 @@
 
 ### 1. เพิ่ม Skill ให้ harness ที่ใช้
 
-1. ดาวน์โหลด [portable skill v0.2.0](https://github.com/encryptedarc/fpl/releases/download/v0.2.0/fpl-gw-v0.2.0.zip) แล้วแตก ZIP หรือ clone repo นี้
+1. ดาวน์โหลด [portable skill v0.2.1](https://github.com/encryptedarc/fpl/releases/download/v0.2.1/fpl-gw-v0.2.1.zip) แล้วแตก ZIP หรือ clone repo นี้
 2. คัดลอกโฟลเดอร์ [fpl-gw](plugins/fpl-gw/skills/fpl-gw/) **ทั้งโฟลเดอร์** ไปยัง skills directory ที่ harness ของคุณกำหนด หรือใช้วิธี import skill ที่ harness รองรับ
 3. เก็บ `SKILL.md`, `scripts/`, `references/` และ `assets/` ไว้ด้วยกัน แล้วโหลด skill ตามวิธีของ harness นั้น
 
