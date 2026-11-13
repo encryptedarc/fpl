@@ -21,20 +21,25 @@ function ctx(args) {
   const cache = args.cache || path.join(os.tmpdir(), 'fpl-cache');
   fs.mkdirSync(cache, { recursive: true });
   const workspace = args.workspace || args.vault || process.env.FPL_WORKSPACE || process.env.FPL_VAULT;
-  return { cache, vault: workspace || process.cwd(), workspaceExplicit: !!workspace, fresh: !!args.fresh };
+  return { cache, vault: workspace || process.cwd(), workspaceExplicit: !!workspace, fresh: !!args.fresh, sources: {} };
 }
 
 // maxAgeMin: reuse a cached file younger than this; --fresh forces refetch of volatile data
 async function getJSON(c, endpoint, maxAgeMin) {
   const file = path.join(c.cache, endpoint.replace(/[\/?=&]+/g, '_') + '.json');
   if (fs.existsSync(file) && !(c.fresh && maxAgeMin < 1e6)) {
-    const age = (Date.now() - fs.statSync(file).mtimeMs) / 60000;
-    if (age < maxAgeMin) return JSON.parse(fs.readFileSync(file, 'utf8'));
+    const stat = fs.statSync(file);
+    const age = (Date.now() - stat.mtimeMs) / 60000;
+    if (age < maxAgeMin) {
+      c.sources[endpoint] = `cached; cache file timestamp ${fmtUTC(stat.mtime)} (retrieval time unverified)`;
+      return JSON.parse(fs.readFileSync(file, 'utf8'));
+    }
   }
   const res = await fetch(BASE + endpoint, { headers: { 'User-Agent': 'Mozilla/5.0' } });
   const text = await res.text();
   if (!res.ok || text.startsWith('"The game is being updated')) throw new Error(`FPL API ${endpoint}: ${res.status} ${text.slice(0, 80)}`);
   fs.writeFileSync(file, text);
+  c.sources[endpoint] = `fetched ${fmtUTC()}`;
   return JSON.parse(text);
 }
 
@@ -80,6 +85,7 @@ function readSquad(c, optional = false) {
 
 const thTime = (iso) => new Date(new Date(iso).getTime() + 7 * 3600e3).toISOString().slice(5, 16).replace('T', ' ') + ' TH';
 const fmtUTC = (d = new Date()) => d.toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
+const dataSources = (c) => '\n## Data sources\n' + Object.entries(c.sources).map(([endpoint, source]) => `FPL API ${endpoint} — ${source}`).join('\n');
 
 // Team xG per fixture = sum of player expected_goals (FPL live, own goals excluded)
 async function teamXG(c, bs, fx) {
@@ -130,4 +136,4 @@ function playedHistory(es, fx) {
 // a team's fixtures in a GW from the season list (element-summary drops fixtures once the GW starts)
 const teamFixtures = (fx, team, gw) => fx.filter((f) => f.event === gw && (f.team_h === team || f.team_a === team));
 
-module.exports = { POS, parseArgs, ctx, getJSON, bootstrap, fixturesAll, summary, live, findPlayer, readSquad, teamMaps, thTime, fmtUTC, teamXG, nextEvent, norm, isDone, playedHistory, teamFixtures };
+module.exports = { POS, parseArgs, ctx, getJSON, bootstrap, fixturesAll, summary, live, findPlayer, readSquad, teamMaps, thTime, fmtUTC, dataSources, teamXG, nextEvent, norm, isDone, playedHistory, teamFixtures };

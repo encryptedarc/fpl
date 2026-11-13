@@ -35,9 +35,20 @@ const rpois = (l) => { let k = 0, p = 1; const L = Math.exp(-l); do { k++; p *= 
   const benchP = list('bench').map((n) => need(n));
   const cap = args.captain && need(args.captain), vice = args.vice && need(args.vice);
   const ifStarts = new Set([...list('if-starts').map((n) => need(n)), cap, vice, ...extra].filter(Boolean).map((p) => p.id));
-  const minOv = Object.fromEntries(list('minutes').map((s) => { const [n, m] = s.split(':'); return [need(n).id, +m]; }));
+  const minOv = Object.fromEntries(list('minutes').map((s) => {
+    const split = s.lastIndexOf(':');
+    const value = s.slice(split + 1).trim(), minutes = Number(value);
+    if (split < 1 || !value || !Number.isFinite(minutes) || minutes < 0 || minutes > 90) {
+      throw new Error('--minutes requires Name:0-90 or Name:CLUB:0-90');
+    }
+    return [need(s.slice(0, split)).id, minutes];
+  }));
   const sims = +(args.sims || 0);
   if (sims && !xi.size) throw new Error('--sims needs --xi');
+  for (const gw of gws) {
+    const doubles = [...squad, ...extra].filter(p => F.teamFixtures(fx, p.team, gw).length > 1);
+    if (doubles.length) throw new Error(`DGW not supported in GW${gw}: ${doubles.map(p => p.web_name).join(', ')}. No forecast generated; select a single-fixture GW or remove these players.`);
+  }
 
   // GW under way: played fixtures use the real (provisional) live points instead of a projection
   const liveByGw = {};
@@ -50,7 +61,6 @@ const rpois = (l) => { let k = 0, p = 1; const L = Math.exp(-l); do { k++; p *= 
     const pos = p.element_type, t = p.team;
     const fs = F.teamFixtures(fx, t, gw);
     if (!fs.length) return { blank: true };
-    if (fs.length > 1) return { double: true };
     const f = fs[0];
     const home = f.team_h === t, o = home ? f.team_a : f.team_h;
     const st = F.isDone(f) && liveByGw[gw] && liveByGw[gw][p.id];
@@ -125,7 +135,7 @@ const rpois = (l) => { let k = 0, p = 1; const L = Math.exp(-l); do { k++; p *= 
     return total;
   }
 
-  console.log(`# GW${gws.join('–')} projection (est.) — FPL API bootstrap-static/ + fixtures/ + element-summary/ + event/{finished}/live/ — fetched ${F.fmtUTC()}`);
+  console.log(`# GW${gws.join('–')} projection (est.) — FPL API bootstrap-static/ + fixtures/ + element-summary/ + event/{gw}/live/ — generated ${F.fmtUTC()}; data timestamps below`);
   console.log(`model: λ = team xGF × opp xGA ÷ league avg ${avg.toFixed(2)} (±${HOME_ADV * 100}% H/A) · minutes = last-5 · CS Poisson · DefCon hit-rate · bonus/90 · no cards`);
   const sumX = {}; const summary = [];
   for (const gw of gws) {
@@ -136,7 +146,7 @@ const rpois = (l) => { let k = 0, p = 1; const L = Math.exp(-l); do { k++; p *= 
       const es = await F.summary(c, p.id);
       const r = project(p, es, gw, false);
       R[p.id] = r;
-      if (r.blank || r.double) { console.log(`| | ${p.web_name} | ${r.blank ? 'BLANK' : 'DGW — not modelled'} | | | | | | | | 0 | |`); continue; }
+      if (r.blank) { console.log(`| | ${p.web_name} | BLANK | | | | | | | | 0 | |`); continue; }
       const rs = ifStarts.has(p.id) && !r.fixed ? project(p, es, gw, true) : null;
       RS[p.id] = rs;
       sumX[p.id] = (sumX[p.id] || 0) + r.x;
@@ -168,4 +178,5 @@ const rpois = (l) => { let k = 0, p = 1; const L = Math.exp(-l); do { k++; p *= 
     for (const p of [...squad, ...extra]) if (sumX[p.id] !== undefined) console.log(`${extra.includes(p) ? 'target' : xi.has(p.id) ? 'XI' : 'squad'} | ${p.web_name} | ${sumX[p.id].toFixed(1)}`);
     if (summary.length) console.log(`XI total per GW: ${summary.map((x) => x.toFixed(1)).join(' / ')}`);
   }
+  console.log(F.dataSources(c));
 })().catch((e) => { console.error(e.message); process.exit(1); });

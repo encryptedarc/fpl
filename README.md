@@ -30,7 +30,7 @@
 
 ### 1. เพิ่ม Skill ให้ harness ที่ใช้
 
-1. ดาวน์โหลด [portable skill v0.2.1](https://github.com/encryptedarc/fpl/releases/download/v0.2.1/fpl-gw-v0.2.1.zip) แล้วแตก ZIP หรือ clone repo นี้
+1. ดาวน์โหลด [portable skill v0.2.2](https://github.com/encryptedarc/fpl/releases/download/v0.2.2/fpl-gw-v0.2.2.zip) แล้วแตก ZIP หรือ clone repo นี้
 2. คัดลอกโฟลเดอร์ [fpl-gw](plugins/fpl-gw/skills/fpl-gw/) **ทั้งโฟลเดอร์** ไปยัง skills directory ที่ harness ของคุณกำหนด หรือใช้วิธี import skill ที่ harness รองรับ
 3. เก็บ `SKILL.md`, `scripts/`, `references/` และ `assets/` ไว้ด้วยกัน แล้วโหลด skill ตามวิธีของ harness นั้น
 
@@ -148,7 +148,7 @@ node plugins/fpl-gw/skills/fpl-gw/scripts/init-vault.js --dir "/path/to/FPL" --s
 | `--fresh` | Data scripts | ดึงข้อมูลใหม่ ยกเว้น live data ของ GW ที่จบแล้ว |
 | `--gws 11-13` | Projection | แสดงหลาย GW พร้อมผลรวมรายคน |
 | `--if-starts "Name"` | Projection | เพิ่มคอลัมน์ประเมินเมื่อได้ลงตัวจริง |
-| `--minutes "Name:0"` | Projection | จำลองสถานการณ์โดยกำหนด minutes ของผู้เล่น |
+| `--minutes "Name:0"` | Projection | กำหนด minutes 0–90; รองรับ `Name:CLUB:0` เมื่อระบุ club |
 
 ลำดับ path สำหรับอ่าน squad คือ `--workspace` → `--vault` → `FPL_WORKSPACE` → `FPL_VAULT` → โฟลเดอร์ปัจจุบัน โดย `--players` หรือ `--xi` ของ projection มีสิทธิ์เหนือ squad ที่บันทึกไว้ Quick mode ของ agent จะส่งผู้เล่นโดยตรงเพื่อไม่อ่านทีมจากโฟลเดอร์อื่นโดยไม่ตั้งใจ
 
@@ -166,9 +166,9 @@ Monte Carlo สุ่ม minutes, goals และ assists รวมถึง goa
 
 ## ข้อจำกัดที่ควรรู้
 
-- **Double Gameweek ยังไม่รองรับใน projection** ตารางแสดง `DGW — not modelled` เป็น 0 และ simulation อาจหยุดทำงาน ห้ามตีความเป็นคะแนนคาดการณ์จริง
-- **Fixture ที่ยังไม่มี kickoff time** อาจทำให้ `news.js` หยุดทำงาน
-- **เวลา `fetched` ใน output เป็นเวลารัน** เมื่ออ่าน cache อาจไม่ใช่เวลาที่ดึงข้อมูลจริง ใช้ `--fresh` เมื่อต้องการข่าวล่าสุด และตรวจ timestamp ของ cache หากต้องการ audit
+- **Double Gameweek ยังไม่รองรับใน projection** หากผู้เล่นใน pool รวม bench/targets มีหลาย fixtures ใน GW ที่ขอ คำสั่งจะหยุดด้วยข้อความอธิบายก่อนแสดง forecast เพื่อไม่ให้เกิด total ที่ขาดผู้เล่น
+- **Fixture ที่ยังไม่มี kickoff time** แสดง `TBC` ท้ายตาราง โดยยังแสดงข่าวผู้เล่นต่อได้
+- **เวลา `generated` คือเวลาสร้างรายงาน** ส่วน Data sources แสดงแยกแต่ละ endpoint: `fetched` สำหรับการดึงผ่าน network และ `cached` พร้อมเวลาไฟล์ cache โดยไม่อ้างว่าเป็นเวลาที่ดึงจริง ใช้ `--fresh` เมื่อต้องการข่าวล่าสุด
 - **ยังไม่จำลอง** cards, own goals, penalty saves, form trends หรือ chip multipliers; auto-subs อยู่ใน simulation เท่านั้น
 - **เวลา fixtures ใน `news.js` เป็น TH (UTC+7)** แม้รันเครื่องใน timezone อื่น
 - **FPL API ไม่มี contract รับประกัน** schema อาจเปลี่ยนหรือปิดชั่วคราวช่วงอัปเดตเกม ข้อมูลก่อน deadline และ selling prices ต้องอาศัย screenshot จากผู้ใช้

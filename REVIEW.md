@@ -1,5 +1,18 @@
 # fpl-gw — Skill review
 
+## Follow-up fixes — 2026-11-13
+
+ตรวจต่อจาก `530d0f2` และแก้ findings โดยไม่เปลี่ยนสูตร projection:
+
+- `metadata.tags` ใช้ string ตาม Agent Skills spec
+- `--minutes` แยกค่าจาก colon ตัวสุดท้าย รองรับ `Name:CLUB:minutes` และปฏิเสธค่าที่ไม่ใช่ตัวเลขหรืออยู่นอก 0–90
+- DGW ยังไม่รองรับ แต่ตรวจทุกผู้เล่นใน pool รวม bench/targets ทุก GW ที่ขอก่อนแสดง forecast แล้วหยุดด้วย error ที่อธิบายข้อจำกัด แทนการแสดง 0/partial total หรือ crash ใน simulation
+- `news.js` เรียง fixture ที่ไม่มี kickoff ไปท้ายตาราง แสดง `TBC` และแสดงข่าวผู้เล่นต่อได้
+- Reports ทั้งสี่แยก `generated` จาก Data sources ราย endpoint: network ใช้ `fetched`; cache แสดงเวลาไฟล์พร้อม `retrieval time unverified` โดยไม่เดาเวลาที่ดึงจริง
+- เพิ่ม offline regression tests: suite ผ่าน 20/20 รวม tests เดิม 14 ข้อ; timestamps ฝั่ง network ทดสอบด้วย HTTP stub ไม่ใช่ live API
+
+Findings 1–3 ในรายงานเดิมด้านล่างเป็นประวัติก่อนแก้; DGW model, live API และ calibration ยังไม่ได้รับการยืนยันในรอบนี้
+
 ตรวจวันที่ **2026-11-08** · baseline [`02b5f91`](https://github.com/encryptedarc/fpl/commit/02b5f91) · ขอบเขต: skill, command, references, templates และ JavaScript ทั้ง 6 ไฟล์
 
 **ผล: ควรแก้ 3 จุดก่อนใช้เป็นตัวช่วยตัดสินใจช่วง deadline หรือ Double Gameweek** โครงสร้าง skill แบ่ง intent กับ references ชัดเจน และให้ vault เป็น source of truth แต่ผลจาก scripts ยังมีกรณีที่หยุดทำงานหรือแสดงความสดของข้อมูลคลาดเคลื่อน

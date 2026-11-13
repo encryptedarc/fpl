@@ -11,7 +11,7 @@ const F = require('./lib/fpl');
   const { T, ID } = F.teamMaps(bs);
   const last = +(args.last || 5);
   const { ts, avg } = await F.teamXG(c, bs, fx);
-  console.log(`source: FPL API fixtures/ + event/{gw}/live/ — fetched ${F.fmtUTC()} · team xG = sum of player expected_goals (no own goals) · league avg xG/team/game ${avg.toFixed(2)}`);
+  console.log(`source: FPL API fixtures/ + event/{gw}/live/ — generated ${F.fmtUTC()} · team xG = sum of player expected_goals (no own goals) · league avg xG/team/game ${avg.toFixed(2)}; data timestamps below`);
   const sum = (rs, k) => rs.reduce((a, r) => a + r[k], 0);
   const wdl = (rs) => `${rs.filter((r) => r.gf > r.ga).length}-${rs.filter((r) => r.gf === r.ga).length}-${rs.filter((r) => r.gf < r.ga).length}`;
   for (const code of args.teams.split(',').map((s) => s.trim().toUpperCase())) {
@@ -29,4 +29,5 @@ const F = require('./lib/fpl');
   const rank = (k) => Object.entries(ts).sort((a, b) => b[1][k] / b[1].p - a[1][k] / a[1].p).map(([id, v], i) => `${i + 1}.${T[id]} ${(v[k] / v.p).toFixed(2)}`).join(' ');
   console.log(`\nxGA/game rank (worst first): ${rank('a')}`);
   console.log(`xGF/game rank (best first): ${rank('f')}`);
+  console.log(F.dataSources(c));
 })().catch((e) => { console.error(e.message); process.exit(1); });

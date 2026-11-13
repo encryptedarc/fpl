@@ -30,3 +30,4 @@ Append to `## Team news`:
   - ✅/⚠️ <player> <status change> …
 ```
 If it changes an earlier decision (e.g. a bench rule hinged on a `d` flag), add a Decision-path item saying which item is now void and why.
+For cached API data, replace the example's `fetched` attribution with the endpoint's `cached` label and cache file timestamp from Data sources, preserving that retrieval time is unverified. The report's `generated` time is not a data retrieval time.

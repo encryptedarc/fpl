@@ -37,7 +37,7 @@ function setup(t) {
     cwd, encoding: 'utf8', timeout: 10000,
     env: { ...process.env, FPL_WORKSPACE: '', FPL_VAULT: '', ...env },
   });
-  return { root, cwd, workspace, run };
+  return { root, cwd, workspace, run, cache, put, fx };
 }
 
 test('news accepts explicit players without a workspace or note writes', t => {
@@ -192,4 +192,86 @@ test('initializing a legacy workspace keeps its existing rules as the instructio
   const target = entry.match(/\]\(([^)]+)\)/);
   assert.ok(target, 'Generated entry point must link to the existing customized rules');
   assert.equal(fs.readFileSync(path.resolve(workspace, target[1]), 'utf8'), rules);
+});
+
+test('minutes overrides accept club-qualified names and preserve zero minutes', t => {
+  const { run } = setup(t);
+  for (const name of ['Alpha', 'Alpha:AAA']) {
+    const r = run('projection.js', ['--players', 'Alpha:AAA', '--gw', '2', '--minutes', `${name}:0`]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /squad \| Alpha \| BBB\(H\) \| 0 \|/);
+    assert.doesNotMatch(r.stdout, /NaN/);
+  }
+});
+
+test('invalid minutes fail explicitly instead of producing misleading projections', t => {
+  const { run } = setup(t);
+  for (const value of ['Alpha:AAA:nope', 'Alpha:AAA:', 'Alpha:-1', 'Alpha:91', 'Alpha']) {
+    const r = run('projection.js', ['--players', 'Alpha:AAA', '--gw', '2', '--minutes', value]);
+    assert.equal(r.status, 1, value);
+    assert.match(r.stderr, /--minutes/);
+    assert.doesNotMatch(r.stdout, /projection \(est\.\)|NaN/);
+  }
+});
+
+test('DGW input is rejected before forecasts for players, XI, bench and targets', t => {
+  const { run, put, fx } = setup(t);
+  put('fixtures/', [...fx, { ...fx[1], id: 21, team_a: 3 }]);
+  for (const args of [
+    ['--players', 'Alpha:AAA'],
+    ['--xi', 'Alpha:AAA', '--captain', 'Alpha', '--vice', 'Beta', '--bench', 'Beta:BBB', '--sims', '2'],
+    ['--xi', 'Beta:BBB', '--bench', 'Alpha:AAA', '--sims', '2'],
+    ['--players', 'Beta:BBB', '--extra', 'Alpha:AAA', '--gws', '1-2'],
+  ]) {
+    const r = run('projection.js', ['--gw', '2', ...args]);
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /DGW.*GW2.*Alpha/);
+    assert.doesNotMatch(r.stdout, /XI total|Monte Carlo|projection \(est\.\)|NaN/);
+  }
+});
+
+test('undated fixtures display TBC after dated fixtures and still show player news', t => {
+  const { run, put, fx } = setup(t);
+  const undated = { ...fx[1], id: 21, kickoff_time: null };
+  for (const fixtures of [[undated, fx[1]], [fx[1], undated], [undated]]) {
+    put('fixtures/?event=2', fixtures);
+    const r = run('news.js', ['--players', 'Alpha:AAA']);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /TBC \| AAA v BBB/);
+    if (fixtures.length > 1) assert.ok(r.stdout.indexOf('TH | AAA v BBB') < r.stdout.indexOf('TBC | AAA v BBB'));
+    assert.match(r.stdout, /IN \| Alpha/);
+    assert.doesNotMatch(r.stdout, /^01-01 07:00 TH \|/m);
+  }
+});
+
+test('all data reports distinguish cached data timestamps from generation time', t => {
+  const { cache, run } = setup(t);
+  const old = new Date(Date.now() - 20 * 60000);
+  for (const name of fs.readdirSync(cache)) fs.utimesSync(path.join(cache, name), old, old);
+  const stamp = old.toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
+  for (const [script, args] of [
+    ['news.js', []], ['news.js', ['--players', 'Alpha:AAA']],
+    ['projection.js', ['--players', 'Alpha:AAA', '--gw', '2']],
+    ['compare.js', ['--players', 'Alpha:AAA,Beta:BBB']],
+    ['opponent.js', ['--teams', 'AAA']],
+  ]) {
+    const r = run(script, args);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /generated/);
+    assert.ok(r.stdout.includes(`bootstrap-static/ — cached; cache file timestamp ${stamp}`), r.stdout);
+    assert.doesNotMatch(r.stdout, /— fetched/);
+  }
+});
+
+test('fresh retrieval records fetch time while a later cache hit is labelled cached', async t => {
+  const { cache } = setup(t);
+  const F = require(path.join(scripts, 'lib/fpl'));
+  t.mock.method(globalThis, 'fetch', async () => ({ ok: true, text: async () => '{"fresh":true}' }));
+  const fresh = F.ctx({ cache, fresh: true });
+  assert.deepEqual(await F.bootstrap(fresh), { fresh: true });
+  assert.match(F.dataSources(fresh), /bootstrap-static\/ — fetched \d{4}-/);
+  const cached = F.ctx({ cache });
+  assert.deepEqual(await F.bootstrap(cached), { fresh: true });
+  assert.match(F.dataSources(cached), /bootstrap-static\/ — cached; cache file timestamp/);
+  assert.doesNotMatch(F.dataSources(cached), /— fetched/);
 });

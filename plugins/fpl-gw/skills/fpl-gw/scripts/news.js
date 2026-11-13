@@ -11,16 +11,16 @@ const F = require('./lib/fpl');
   const ev = args.gw ? bs.events.find((e) => e.id === +args.gw) : F.nextEvent(bs);
   const left = (new Date(ev.deadline_time) - Date.now()) / 60000;
   console.log(`# GW${ev.id} deadline ${ev.deadline_time} (${F.thTime(ev.deadline_time)}) · now ${F.fmtUTC()} · ${left <= 0 ? 'PAST DEADLINE' : left > 2880 ? `เหลือ ${Math.floor(left / 1440)}d ${Math.floor((left % 1440) / 60)}h` : `เหลือ ${Math.floor(left / 60)}h${Math.round(left % 60)}m`}`);
-  console.log(`source: FPL API bootstrap-static/ + fixtures/?event=${ev.id} — fetched ${F.fmtUTC()}`);
+  console.log(`source: FPL API bootstrap-static/ + fixtures/?event=${ev.id} — generated ${F.fmtUTC()}; data timestamps below`);
 
   const fx = await F.getJSON(c, `fixtures/?event=${ev.id}`, 30);
   console.log('\n## Fixtures (TH)');
-  fx.sort((a, b) => a.kickoff_time.localeCompare(b.kickoff_time))
-    .forEach((f) => console.log(`${F.thTime(f.kickoff_time)} | ${T[f.team_h]} v ${T[f.team_a]} | FDR ${f.team_h_difficulty}/${f.team_a_difficulty}`));
+  fx.sort((a, b) => (a.kickoff_time || '9999').localeCompare(b.kickoff_time || '9999'))
+    .forEach((f) => console.log(`${f.kickoff_time ? F.thTime(f.kickoff_time) : 'TBC'} | ${T[f.team_h]} v ${T[f.team_a]} | FDR ${f.team_h_difficulty}/${f.team_a_difficulty}`));
 
   const specs = players.map((s) => ({ s, tag: args.players ? 'IN' : 'SQ' }))
     .concat((args.extra ? String(args.extra).split(',').map(s => s.trim()).filter(Boolean) : []).map((s) => ({ s, tag: 'XT' })));
-  if (!specs.length) { console.log('\nNo players supplied — use --players "Name:CLUB,..." for team news; no workspace is required.'); return; }
+  if (!specs.length) { console.log('\nNo players supplied — use --players "Name:CLUB,..." for team news; no workspace is required.'); console.log(F.dataSources(c)); return; }
   console.log('\n## Status (a=available d=doubt i=injured s=suspended u=unavailable)');
   // GW under way: show provisional points of fixtures already played
   const cur = bs.events.find((e) => e.is_current && !e.finished);
@@ -38,5 +38,6 @@ const F = require('./lib/fpl');
       p.transfers_in_event - p.transfers_out_event, p.form, ...(L ? [lv && lv.stats.minutes ? `${lv.stats.minutes}′/${lv.stats.total_points}` : '-'] : []),
       p.news ? `${p.news} (${F.thTime(p.news_added)})` : '-'].join(' | '));
   }
-  if (L) console.log(`\nlive = FPL API event/${cur.id}/live/ (provisional until bonus is confirmed) — fetched ${F.fmtUTC()}`);
+  if (L) console.log(`\nlive = FPL API event/${cur.id}/live/ (provisional until bonus is confirmed)`);
+  console.log(F.dataSources(c));
 })().catch((e) => { console.error(e.message); process.exit(1); });

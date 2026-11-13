@@ -12,7 +12,7 @@ const F = require('./lib/fpl');
   const { T } = F.teamMaps(bs);
   const n = +(args.n || 6);
   const from = +(args.from || F.nextEvent(bs).id);
-  console.log(`source: FPL API bootstrap-static/ + element-summary/{id}/ — fetched ${F.fmtUTC()} · ticker from GW${from}`);
+  console.log(`source: FPL API bootstrap-static/ + element-summary/{id}/ — generated ${F.fmtUTC()} · ticker from GW${from}; data timestamps below`);
   console.log('\n| metric | ' + args.players.split(',').map((s) => s.trim()).join(' | ') + ' |');
   const ps = [];
   for (const s of args.players.split(',')) {
@@ -50,4 +50,5 @@ const F = require('./lib/fpl');
   for (const x of ps) {
     console.log(`${x.p.web_name}: ` + x.es.history.slice(-5).map((h) => `GW${h.round} ${h.was_home ? 'H' : 'A'}-${T[h.opponent_team]} ${h.minutes}' ${h.total_points}p G${h.goals_scored} A${h.assists} xGI ${h.expected_goal_involvements}`).join(' | '));
   }
+  console.log(F.dataSources(c));
 })().catch((e) => { console.error(e.message); process.exit(1); });

@@ -1,6 +1,6 @@
 {
   "name": "fpl-gw",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "FPL gameweek co-pilot: news, transfers, captain picks, matchups and xPts in chat, with optional plain Markdown history. No Obsidian required.",
   "author": {
     "name": "encryptedarc",

@@ -3,7 +3,7 @@ name: fpl-gw
 description: Help with Fantasy Premier League gameweek planning — team news, transfers, captain/vice, opponent matchups and xPts projections. Use for FPL questions and follow-ups, including Thai prompts such as "check ข่าว", "C ใคร" and "คาดการณ์คะแนน". Works directly in chat; optionally saves plans and results in a plain Markdown workspace.
 metadata:
   author: "Encrypted Arc <36179756+encryptedarc@users.noreply.github.com>"
-  tags: [fantasy-premier-league, football, planning]
+  tags: "fantasy-premier-league, football, planning"
 ---
 
 # FPL Gameweek assistant
@@ -26,7 +26,7 @@ No workspace yet? Continue in Quick mode. Only when the user requests persistent
 
 - Check the current UTC time against the requested GW's API deadline before giving time-sensitive advice. Say when it has passed; the user makes all changes in FPL themselves. If live data is unavailable, state what could not be verified rather than inventing a countdown or current news.
 - Never invent points, ranks, prices, selling prices, ITB, free transfers or hits. Use `unknown` for missing facts, ask when they gate a recommendation, and distinguish a hypothetical scenario from the user's actual team.
-- Label model estimates `(est.)` or the user's chosen equivalent. Cite API endpoint/web source and date for external numbers. Script `fetched` labels currently reflect run time even on cache hits: distinguish this from actual retrieval time; use `--fresh` for volatile news and do not describe cached data as newly fetched.
+- Label model estimates `(est.)` or the user's chosen equivalent. Cite API endpoint/web source and date for external numbers. Reports distinguish `generated` time from per-endpoint Data sources: `fetched` means a network retrieval, while `cached` gives the cache file timestamp with retrieval time unverified. Preserve that distinction when citing cached data; use `--fresh` for volatile news.
 - Check publication date and season for news. Keep player/football terminology in English; otherwise use the user's language, or their workspace preference when provided.
 - Before finalizing a transfer or XI, check the available squad, budget/selling prices, positional and club limits, captain/vice, bench order and chip/FT/hit assumptions relevant to that plan. In Workspace mode also run `Lessons.md`'s checklist. Missing lessons are not a prerequisite for Quick mode.
 - The user chooses the plan. Do not describe a plan as confirmed before they confirm it, or imply that a saved plan changes their FPL account. Closed recorded results require new evidence and a dated correction; never silently overwrite them.
@@ -56,12 +56,12 @@ Resolve `scripts/` relative to this installed skill directory, not the user's wo
 - `news.js [--gw N] [--players "Name:CLUB,..."] [--extra "Target:CLUB,..."]` — explicit `--players` replaces the saved squad; `--extra` adds targets to that selection or workspace squad. Without players or a squad, returns deadline and fixtures only.
 - `compare.js --players "A:CLUB,B:CLUB" [--n 6] [--from GW]` — comparison and fixture ticker, no workspace needed.
 - `opponent.js --teams ARS,CHE [--last 5]` — team statistics, no workspace needed.
-- `projection.js [--players "A:CLUB,B:CLUB"] [--xi "..."] [--bench "..."] [--captain X] [--vice Y] [--sims 20000] [--gw N | --gws A-B] [--extra "Target:CLUB"] [--if-starts "..."] [--minutes "Name:0"]` — player pool comes from `--players`, otherwise XI + bench, otherwise optional `Squad.md`. `--extra` adds targets. Captain/vice and scenario names must resolve uniquely within that pool; `Name:CLUB` is supported. Supply the full 11 and ordered bench for a meaningful team simulation; partial inputs are not a complete team forecast.
+- `projection.js [--players "A:CLUB,B:CLUB"] [--xi "..."] [--bench "..."] [--captain X] [--vice Y] [--sims 20000] [--gw N | --gws A-B] [--extra "Target:CLUB"] [--if-starts "..."] [--minutes "Name:0"]` — player pool comes from `--players`, otherwise XI + bench, otherwise optional `Squad.md`. `--extra` adds targets. Captain/vice and scenario names must resolve uniquely within that pool; `Name:CLUB` is supported. Minutes accept `Name:0` or `Name:CLUB:0`, with values from 0 to 90. Supply the full 11 and ordered bench for a meaningful team simulation; partial inputs are not a complete team forecast.
 - `init-vault.js --dir <folder> [--season YYYY-YY]` — optional Markdown workspace scaffold; never overwrites existing files.
 
 Shared data-script options: `--workspace <dir>` (legacy `--vault`), then `FPL_WORKSPACE` / `FPL_VAULT`, then cwd for reading `Squad.md` if no explicit players. A missing explicitly selected workspace squad is an error; do not silently switch teams. `--cache <dir>` defaults to OS temp `fpl-cache`; `--fresh` refetches volatile data, not finished-GW live caches.
 
-Projection limitations: DGWs are not modelled and can crash simulation; do not use the printed zero as a DGW forecast. Cards, own goals, penalty saves, form trends and chip multipliers are not modelled. Auto-subs are included only with `--sims`. Team xG is FPL-derived; keep other providers' numbers separate and flag disagreements. `news.js` times are TH (UTC+7), and null kickoff times can currently stop the script.
+Projection limitations: DGWs are not modelled. If any selected player (including bench or extra targets) has multiple fixtures in any requested GW, the entire command exits with an explanatory error before printing forecasts. Do not retry by dropping a DGW player from a full-team forecast; explain that the requested team forecast is unsupported. Cards, own goals, penalty saves, form trends and chip multipliers are not modelled. Auto-subs are included only with `--sims`. Team xG is FPL-derived; keep other providers' numbers separate and flag disagreements. `news.js` times are TH (UTC+7); fixtures with no kickoff time appear last as `TBC`.
 
 ## Answer and persistence
 
