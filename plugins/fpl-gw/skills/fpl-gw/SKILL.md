@@ -1,6 +1,9 @@
 ---
 name: fpl-gw
 description: Help with Fantasy Premier League gameweek planning — team news, transfers, captain/vice, opponent matchups and xPts projections. Use for FPL questions and follow-ups, including Thai prompts such as "check ข่าว", "C ใคร" and "คาดการณ์คะแนน". Works directly in chat; optionally saves plans and results in a plain Markdown workspace.
+metadata:
+  author: "Encrypted Arc <36179756+encryptedarc@users.noreply.github.com>"
+  tags: [fantasy-premier-league, football, planning]
 ---
 
 # FPL Gameweek assistant
