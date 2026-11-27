@@ -47,7 +47,16 @@ No workspace yet? Continue in Quick mode. Only when the user requests persistent
 | Captain / vice | [captain](references/captain.md) | `compare.js`, `projection.js` |
 | Opponent defence / attack | [matchup](references/matchup.md) | `opponent.js`, browser if available |
 | xPts / projected XI | [projection](references/projection.md) | `projection.js --sims` |
-| Confirm/save plan, review results | [lock and close](references/lock-close.md) | Chat summary or workspace updates |
+| Lock or close | [lock and close](references/lock-close.md) — read before recapping a confirmed plan or recording results | Chat summary or workspace updates |
+
+## Full-gameweek planning
+
+Use this workflow when opening or refining an overall GW plan. For a scoped news, transfer, or captain question, use its reference and show the decisions affected by the answer.
+
+1. **Verify the snapshot.** Read [news](references/news.md) and run news.js with --fresh when live access is available. Record the source times, what changed since the prior check, and which current-season club updates could change the plan. A user-supplied snapshot stays dated as supplied. Use the same source value and time in the note and chat for prices, flags and weekly changes. If discussing price timing, compare dated timestamps and state explicitly whether the next update is before or after the FPL deadline.
+2. **Compare decisions.** Work through [transfer](references/transfer.md), [captain](references/captain.md) and [projection](references/projection.md). For 2 available FT, the transfer table has three rows: **0 FT** (keep the squad), **1 FT**, and **2 FT**. Include every row even when a route is pending. Give each row the moves or its blocker, minimum ITB, projected XI gain over the same horizon, and FT carried forward. Mark individual missing fields pending and complete the other columns. Treat historical Lessons and Patterns as prompts to check the current matchup, minutes, and ways to score.
+3. **Draft the team.** Give a provisional XI, C/V and ordered bench if the squad is known. For each material uncertainty, say what changes the draft. Check starters and credible cameos, GK cover, an eligible auto-sub for each at-risk starter, and resulting club limits. If a field cannot be drafted, give the specific blocker rather than leaving it blank.
+4. **Check before returning.** Lead with the recommended route or conditional routes, deadline and only the news or inputs that could change the choice. Verify that the answer and any saved note agree on the snapshot, budget math, transfers, XI, C/V and bench. In Workspace mode, apply the Lessons checklist and show outstanding checks. Mark the plan as a draft until the user confirms it.
 
 ## Scripts: Node 18+, no dependencies
 
@@ -64,6 +73,8 @@ Shared data-script options: `--workspace <dir>` (legacy `--vault`), then `FPL_WO
 Projection limitations: DGWs are not modelled. If any selected player (including bench or extra targets) has multiple fixtures in any requested GW, the entire command exits with an explanatory error before printing forecasts. Do not retry by dropping a DGW player from a full-team forecast; explain that the requested team forecast is unsupported. Cards, own goals, penalty saves, form trends and chip multipliers are not modelled. Auto-subs are included only with `--sims`. Team xG is FPL-derived; keep other providers' numbers separate and flag disagreements. `news.js` times are TH (UTC+7); fixtures with no kickoff time appear last as `TBC`.
 
 ## Answer and persistence
+
+**When the user confirms a plan**, recap transfers, XI, C/V and bench and ask them to compare the Transfers and Pick Team screens. State **FPL verification pending** until the user verifies the settings. If you mention the reserve GK as cover, say that the starter must play 0 minutes and the reserve must play.
 
 Present deadline context, useful comparison tables, recommendation with estimates, material uncertainty/changed advice, and dated sources. Ask a follow-up only if a concrete choice or required input remains.
 

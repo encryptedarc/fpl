@@ -6,10 +6,11 @@ Compare the candidates against the current template captain using verified owner
 
 1. `node scripts/compare.js --players "<C candidates>"` — rates, minutes pattern, penalty order, last-3 xGI.
 2. Opponents: `node scripts/opponent.js --teams <each candidate's GW opponent>` — season and last-5 xGA, home/away split. Deeper dive → `references/matchup.md`.
-3. `node scripts/projection.js --xi … --captain X --vice Y --if-starts "<candidates>"` — compare **both** columns:
+3. `node scripts/projection.js --xi … --captain X --vice Y --if-starts "<candidates>"` — compare the template captain and credible alternatives on the same model. Report both columns in base points per player before the captain multiplier:
    - unconditional xPts (minutes averaged over last 5, so one 0′ drags it down), and
    - "if starts" xPts. When previews expect the player to start, this is the relevant number.
-4. Ownership: report `selected_by_percent` of the template captain. If the user goes against ~80% ownership, a template haul costs rank even when the pick was +EV — say this every time, in one line.
+4. Use any template-captain lesson to require current evidence. Give the candidate’s minutes and role, the opponent’s relevant xGA split, and the projected gap. If the numbers are unavailable, name the missing evidence before giving a provisional lean.
+5. Report `selected_by_percent` as ownership. Give effective ownership only when a separate source measures it for the relevant cohort and GW. Use verified figures to explain rank exposure.
 
 ## Output
 
@@ -23,7 +24,7 @@ Compare the candidates against the current template captain using verified owner
 | GW opponent (xGA/g, rank) | | | |
 | xPts · if starts | | | |
 
-Then the options as **C X / V Y** pairs with ✅/❌, and the EO line. If the analysis changes your earlier lean (it did once: a "1.35× edge" shrank to ~+1.1 if-starts once minutes were modelled) — flag it under `⚠️`.
+Then give **C X / V Y**, the estimated points gap and the minutes or matchup evidence that could change the choice. If the analysis changes your earlier lean, give the reason.
 
 ## Vice
 

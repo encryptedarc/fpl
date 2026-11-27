@@ -11,16 +11,22 @@ Goal: tell the user, fast, whether anything in their squad or shortlist changed 
    - While a GW is under way the table also shows live minutes/points; summarise what's banked and who is still to play.
 3. Press conferences: search with an available web-search tool, prioritizing fresh sources close to the deadline, for `FPL Gameweek <N> team news press conference injuries <Month YYYY>`. Only keep items that touch the squad, targets, or their opponents.
    - Search summaries are thin and often surface last season's articles. When that happens, **read the pages directly** (use the host's available page-reading or browser capability; if none is available, state that the article could not be checked and do not invent details): the FFS live team-news blog for that day (URL pattern `fantasyfootballscout.co.uk/YYYY/MM/DD/fpl-gameweek-<N>-team-news-…`, taken from search results), FFS predicted line-ups (`fantasyfootballscout.co.uk/team-news/`), and the club's own news page for presser quotes. A baseline run that did this found details search missed (players back from injury on the opponent side, international call-ups as a fitness signal).
-   - Check the article date against the current season before using it.
+   - Record the club, opponent and current-season publication date for any material update. If still unresolved, report which sources were checked, when, and whether the item was unpublished, inaccessible, or silent about the player.
 4. Sanity-check web summaries against the user's supplied facts and any workspace records before flagging them as errors — managers and squads change between seasons; a summary that "looks wrong" may be right.
 5. Single-source claims → mark `(single source)`.
 
 ## Output table
 
-| Our player | GW fixture | News | Impact |
-|---|---|---|---|
+| Player | GW fixture | FPL flag / news date | Expected role | What would change the decision |
+|---|---|---|---|---|
 
-Then: price changes this GW (Δ£) for squad + targets, and big net-transfer numbers as a hint of the next price move (a hint only — don't predict exact rises/falls).
+For players whose minutes affect a decision, check recent starts, cameos and 0-minute matches, direct competition, and manager comments. An available flag or a 100% availability field gives fitness context. Record start/cameo risk separately. Record whether the official lineup is due before the FPL deadline and apply a late-lineup lesson only when minutes are also uncertain.
+
+For GK cover, distinguish the reserve keeper being fit from the reserve keeper being expected to play. The auto-sub supplies points only if the starting GK plays 0 minutes and the reserve plays. Show the zero-points scenario if both could miss out.
+
+Report market price and weekly change (Δ£ from cost_change_event) from the same bootstrap snapshot. When comparing with an earlier snapshot, label that difference as a change since the previous check. If a copied number conflicts with the bootstrap snapshot, use the snapshot value and flag the discrepancy. When recording a correction, follow the local workspace rules. Confirm that chat and the saved note cite the same value.
+
+If price timing could affect the move, check the next price update against the GW deadline using the rules for that season. Use the official Price Change Predictor when available. Label net transfers as context and keep any price forecast conditional. If the next update is after the GW deadline, say so and keep the deadline as the action time.
 
 ## Write (Workspace mode only)
 
